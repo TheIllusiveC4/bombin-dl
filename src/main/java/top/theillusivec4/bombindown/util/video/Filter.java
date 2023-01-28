@@ -1,4 +1,4 @@
-package top.theillusivec4.bombindown.util;
+package top.theillusivec4.bombindown.util.video;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import top.theillusivec4.bombindown.data.json.Video;
+import top.theillusivec4.bombindown.util.BombinDownLogger;
 
 public class Filter {
 
@@ -65,7 +66,7 @@ public class Filter {
         return false;
       }
     } catch (ParseException e) {
-      e.printStackTrace();
+      BombinDownLogger.error("There was an error formatting date " + video.publishDate + ".", e);
     }
     return true;
   }

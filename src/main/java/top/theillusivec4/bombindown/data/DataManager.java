@@ -21,13 +21,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.logging.Level;
-import top.theillusivec4.bombindown.BombinDown;
 import top.theillusivec4.bombindown.GiantBombApi;
 import top.theillusivec4.bombindown.data.json.Cache;
 import top.theillusivec4.bombindown.data.json.Show;
 import top.theillusivec4.bombindown.data.json.Video;
 import top.theillusivec4.bombindown.data.json.base.OriginalVideo;
+import top.theillusivec4.bombindown.util.BombinDownLogger;
 import top.theillusivec4.bombindown.util.Constants;
 
 public class DataManager {
@@ -50,7 +49,7 @@ public class DataManager {
   }
 
   public static void load() {
-    BombinDown.LOGGER.info("Loading seed data...");
+    BombinDownLogger.log("Loading seed data...");
     ClassLoader classloader = Thread.currentThread().getContextClassLoader();
 
     try (InputStream is = classloader.getResourceAsStream("seed_shows.json")) {
@@ -66,13 +65,11 @@ public class DataManager {
           SHOWS_TO_VIDEOS.put("", new CopyOnWriteArrayList<>());
           lastShowRecorded = shows[shows.length - 1].guid;
         } catch (IOException e) {
-          BombinDown.LOGGER.log(Level.WARNING, "There was an error loading show data.");
-          BombinDown.LOGGER.log(Level.WARNING, e.getMessage(), e);
+          BombinDownLogger.error("There was an error loading show data.", e);
         }
       }
     } catch (IOException e) {
-      BombinDown.LOGGER.log(Level.WARNING, "There was an error reading show data.");
-      BombinDown.LOGGER.log(Level.WARNING, e.getMessage(), e);
+      BombinDownLogger.error("There was an error reading show data.", e);
     }
 
     try (InputStream is = classloader.getResourceAsStream("seed_videos.json")) {
@@ -96,13 +93,11 @@ public class DataManager {
           }
           lastVideoRecorded = videos[0].guid;
         } catch (IOException e) {
-          BombinDown.LOGGER.log(Level.WARNING, "There was an error loading video data.");
-          BombinDown.LOGGER.log(Level.WARNING, e.getMessage(), e);
+          BombinDownLogger.error("There was an error loading video data.", e);
         }
       }
     } catch (IOException e) {
-      BombinDown.LOGGER.log(Level.WARNING, "There was an error reading video data.");
-      BombinDown.LOGGER.log(Level.WARNING, e.getMessage(), e);
+      BombinDownLogger.error("There was an error reading video data.", e);
     }
 
     if (FileManager.CACHE.exists()) {
@@ -135,12 +130,10 @@ public class DataManager {
           lastVideoRecorded = vids[0].guid;
         }
       } catch (Exception e) {
-        e.printStackTrace();
-        BombinDown.LOGGER.log(Level.WARNING, "There was an error reading new shows and videos.");
-        BombinDown.LOGGER.log(Level.WARNING, e.getMessage(), e);
+        BombinDownLogger.error("There was an error reading new shows and videos.", e);
       }
     }
-    BombinDown.LOGGER.info("Loading finished.");
+    BombinDownLogger.log("Finished loading seed data.");
   }
 
   public static Collection<Show> getShows() {
@@ -186,7 +179,7 @@ public class DataManager {
       NEWEST_SHOWS.put(show.guid, show);
       SHOWS.put(show.guid, show);
     }
-    BombinDown.LOGGER.info("Found " + showsToAdd.size() + " new shows.");
+    BombinDownLogger.log("Found " + showsToAdd.size() + " new shows.");
   }
 
   public static boolean updateVideos(JsonElement jsonElement) {
@@ -217,12 +210,12 @@ public class DataManager {
       NEWEST_VIDS.put(video.guid, video);
       SHOWS_TO_VIDEOS.computeIfAbsent(showGuid, (k) -> new ArrayList<>()).add(video.guid);
     }
-    BombinDown.LOGGER.info("Found " + videosToAdd.size() + " new videos.");
+    BombinDownLogger.log("Found " + videosToAdd.size() + " new videos.");
     return found;
   }
 
   public static void writeLatestUpdates() {
-    BombinDown.LOGGER.info("Saving updates...");
+    BombinDownLogger.log("Saving updates...");
     Show[] shows = new Show[] {};
     Video[] videos = new Video[] {};
     String timestamp = ZonedDateTime.now(ZoneId.systemDefault())
@@ -249,9 +242,8 @@ public class DataManager {
     try (Writer writer = Files.newBufferedWriter(FileManager.CACHE.toPath())) {
       Constants.GSON.toJson(new Cache(timestamp, shows, videos), writer);
     } catch (IOException e) {
-      BombinDown.LOGGER.log(Level.SEVERE, "There was an error while saving latest updates.");
-      BombinDown.LOGGER.log(Level.SEVERE, e.getMessage(), e);
+      BombinDownLogger.error("There was an error while saving latest updates.", e);
     }
-    BombinDown.LOGGER.info("Updates saved.");
+    BombinDownLogger.log("Finished saving updates.");
   }
 }

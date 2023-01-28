@@ -6,7 +6,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import top.theillusivec4.bombindown.data.Settings;
+import top.theillusivec4.bombindown.data.UserPrefs;
+import top.theillusivec4.bombindown.util.BombinDownLogger;
 
 public class DownloadExecutor {
 
@@ -14,7 +15,7 @@ public class DownloadExecutor {
   private final Map<Download, Future<?>> futures;
 
   public DownloadExecutor() {
-    int maxDownloads = Settings.INSTANCE.getMaxDownloads();
+    int maxDownloads = UserPrefs.INSTANCE.getMaxDownloads();
     this.threadPoolExecutor =
         new ThreadPoolExecutor(maxDownloads, maxDownloads, 10, TimeUnit.MINUTES,
             new LinkedBlockingQueue<>());
@@ -22,14 +23,19 @@ public class DownloadExecutor {
   }
 
   public void setMaxDownloads(int num) {
+    BombinDownLogger.log("Setting maximum simultaneous downloads to " + num + "...");
     int current = this.threadPoolExecutor.getCorePoolSize();
 
-    if (num > current) {
-      this.threadPoolExecutor.setMaximumPoolSize(num);
-      this.threadPoolExecutor.setCorePoolSize(num);
-    } else if (num < current){
-      this.threadPoolExecutor.setCorePoolSize(num);
-      this.threadPoolExecutor.setMaximumPoolSize(num);
+    try {
+      if (num > current) {
+        this.threadPoolExecutor.setMaximumPoolSize(num);
+        this.threadPoolExecutor.setCorePoolSize(num);
+      } else if (num < current) {
+        this.threadPoolExecutor.setCorePoolSize(num);
+        this.threadPoolExecutor.setMaximumPoolSize(num);
+      }
+    } catch (IllegalArgumentException e) {
+      BombinDownLogger.error("There was an error changing maximum simultaneous downloads.", e);
     }
   }
 

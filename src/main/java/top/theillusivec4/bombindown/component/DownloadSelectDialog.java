@@ -22,7 +22,7 @@ import javax.swing.table.TableColumnModel;
 import top.theillusivec4.bombindown.BombinDown;
 import top.theillusivec4.bombindown.data.DataManager;
 import top.theillusivec4.bombindown.data.FileManager;
-import top.theillusivec4.bombindown.data.Settings;
+import top.theillusivec4.bombindown.data.UserPrefs;
 import top.theillusivec4.bombindown.data.json.Show;
 import top.theillusivec4.bombindown.data.json.Video;
 
@@ -142,7 +142,7 @@ public class DownloadSelectDialog extends JDialog {
         return;
       }
 
-      if (BombinDown.downloadContainer.add(videos) > 0) {
+      if (BombinDown.addDownloads(videos) > 0) {
         JOptionPane.showMessageDialog(this, "Queued " + videos.size() + " videos for download.");
         this.fireDisposeListeners();
         this.dispose();
@@ -217,7 +217,7 @@ public class DownloadSelectDialog extends JDialog {
       }
     }
 
-    if (premium && !Settings.INSTANCE.getPremium()) {
+    if (premium && !UserPrefs.INSTANCE.getPremium()) {
       Object[] options = {"Confirm", "Cancel"};
       int option = JOptionPane.showOptionDialog(this,
           "You have selected one or more premium videos despite not enabling Premium in Manage API Credentials. Please note that if you are not a premium member, the downloads will fail. Proceed anyway?",

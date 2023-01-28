@@ -16,7 +16,6 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.TreeSet;
-import java.util.logging.Level;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -30,19 +29,18 @@ import javax.swing.ListSelectionModel;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-import top.theillusivec4.bombindown.BombinDown;
 import top.theillusivec4.bombindown.component.DownloadSelectDialog;
 import top.theillusivec4.bombindown.data.DataManager;
 import top.theillusivec4.bombindown.data.FileManager;
-import top.theillusivec4.bombindown.data.Settings;
+import top.theillusivec4.bombindown.data.UserPrefs;
 import top.theillusivec4.bombindown.data.json.DownloadTracker;
 import top.theillusivec4.bombindown.data.json.Video;
 import top.theillusivec4.bombindown.download.Download;
 import top.theillusivec4.bombindown.download.DownloadProgressBar;
 import top.theillusivec4.bombindown.download.DownloadTableModel;
-import top.theillusivec4.bombindown.util.Enums;
-import top.theillusivec4.bombindown.util.FileNameCleaner;
-import top.theillusivec4.bombindown.util.QualityLink;
+import top.theillusivec4.bombindown.util.BombinDownLogger;
+import top.theillusivec4.bombindown.util.Constants;
+import top.theillusivec4.bombindown.util.video.VideoUtils;
 
 public class DownloadContainer extends JPanel {
 
@@ -144,7 +142,7 @@ public class DownloadContainer extends JPanel {
       for (int i = 0; i < this.tableModel.getRowCount(); i++) {
 
         if (this.tableModel.getValueAt(i, 5)
-            .equals(" " + Enums.DownloadStatus.COMPLETED.getText())) {
+            .equals(" " + Constants.DownloadStatus.COMPLETED.getText())) {
           downloads.add(this.tableModel.getDownload(i));
         }
       }
@@ -184,10 +182,12 @@ public class DownloadContainer extends JPanel {
 
         if (this.selectedDownloads.size() == 1) {
           Download download = this.selectedDownloads.get(0);
-          this.restartButton.setEnabled(download.getStatus() == Enums.DownloadStatus.CANCELLED ||
-              download.getStatus() == Enums.DownloadStatus.FAILED);
-          this.cancelButton.setEnabled(download.getStatus() == Enums.DownloadStatus.DOWNLOADING ||
-              download.getStatus() == Enums.DownloadStatus.QUEUED);
+          this.restartButton.setEnabled(
+              download.getStatus() == Constants.DownloadStatus.CANCELLED ||
+                  download.getStatus() == Constants.DownloadStatus.FAILED);
+          this.cancelButton.setEnabled(
+              download.getStatus() == Constants.DownloadStatus.DOWNLOADING ||
+                  download.getStatus() == Constants.DownloadStatus.QUEUED);
         } else {
           this.restartButton.setEnabled(false);
           this.cancelButton.setEnabled(false);
@@ -251,9 +251,8 @@ public class DownloadContainer extends JPanel {
       dialog.setSelected(guids);
       dialog.setVisible(true);
     } catch (IOException e) {
-      BombinDown.LOGGER.log(Level.SEVERE,
-          "There was an error loading the file " + selectedFile + " into downloads.");
-      BombinDown.LOGGER.log(Level.SEVERE, e.getMessage(), e);
+      BombinDownLogger.error(
+          "There was an error loading the file " + selectedFile + " into downloads.", e);
     }
   }
 
@@ -268,7 +267,8 @@ public class DownloadContainer extends JPanel {
         if (vid != null) {
           this.tableModel.addDownload(
               new Download(this.tableModel, tracker.url(), tracker.output(), vid,
-                  tracker.metadata(), tracker.images(), Enums.DownloadStatus.of(tracker.status())));
+                  tracker.metadata(), tracker.images(),
+                  Constants.DownloadStatus.of(tracker.status())));
         } else {
           JOptionPane.showMessageDialog(this, "Saved download tracking for " + tracker.url() +
                   " could not find a valid video entry and failed loading.", "Malformed Download",
@@ -282,11 +282,11 @@ public class DownloadContainer extends JPanel {
     List<Download> downloads = new ArrayList<>();
 
     for (Video video : videos) {
-      String url = QualityLink.get(video, Settings.INSTANCE.getQuality());
+      String url = VideoUtils.getQualityUrl(video, UserPrefs.INSTANCE.getQuality());
 
       if (url != null) {
         String output =
-            Settings.INSTANCE.getFileOutputTemplate() + url.substring(url.lastIndexOf("."));
+            UserPrefs.INSTANCE.getFileOutputTemplate() + url.substring(url.lastIndexOf("."));
         output = output.replace("{guid}", video.guid);
         output = output.replace("{title}", video.name);
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -300,19 +300,21 @@ public class DownloadContainer extends JPanel {
           output = output.replace("{day}",
               "" + String.format("%02d", calendar.get(Calendar.DAY_OF_MONTH)));
         } catch (ParseException e) {
-          e.printStackTrace();
+          BombinDownLogger.error("There was an error parsing date " + video.publishDate + ".", e);
         }
-        output = FileNameCleaner.cleanFileName(output, "_");
+        output = VideoUtils.cleanFileName(output, "_");
         downloads.add(
-            new Download(this.tableModel, url + "?api_key=" + Settings.INSTANCE.getApiKey(), output,
-                video, Settings.INSTANCE.isIncludeMetadata(), Settings.INSTANCE.isIncludeImages()));
+            new Download(this.tableModel, url + "?api_key=" + UserPrefs.INSTANCE.getApiKey(),
+                output,
+                video, UserPrefs.INSTANCE.isIncludeMetadata(),
+                UserPrefs.INSTANCE.isIncludeImages()));
       } else {
         JOptionPane.showMessageDialog(this, video.name +
                 " could not be downloaded because there is no valid URL at your chosen quality level or lower. Please try a higher quality level.",
             "No URL Found", JOptionPane.ERROR_MESSAGE);
       }
     }
-    BombinDown.LOGGER.info("Queued " + downloads.size() + " downloads.");
+    BombinDownLogger.log("Queued " + downloads.size() + " downloads.");
     this.tableModel.addDownloads(downloads);
     return downloads.size();
   }

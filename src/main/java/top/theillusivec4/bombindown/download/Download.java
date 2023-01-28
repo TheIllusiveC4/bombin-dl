@@ -11,18 +11,16 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.util.Objects;
-import java.util.logging.Level;
 import javax.swing.SwingUtilities;
-import top.theillusivec4.bombindown.BombinDown;
 import top.theillusivec4.bombindown.GiantBombApi;
 import top.theillusivec4.bombindown.data.DataManager;
-import top.theillusivec4.bombindown.data.Settings;
+import top.theillusivec4.bombindown.data.UserPrefs;
 import top.theillusivec4.bombindown.data.json.Show;
 import top.theillusivec4.bombindown.data.json.Video;
 import top.theillusivec4.bombindown.data.json.base.OriginalVideo;
+import top.theillusivec4.bombindown.util.BombinDownLogger;
 import top.theillusivec4.bombindown.util.Constants;
-import top.theillusivec4.bombindown.util.Enums;
-import top.theillusivec4.bombindown.util.FileNameCleaner;
+import top.theillusivec4.bombindown.util.video.VideoUtils;
 
 public class Download implements Runnable {
 
@@ -38,17 +36,17 @@ public class Download implements Runnable {
   private long downloaded;
   private String subDirectory;
 
-  private Enums.DownloadStatus status;
+  private Constants.DownloadStatus status;
 
   private float speed = 0;
 
   public Download(DownloadTableModel table, String url, String output, Video video,
                   boolean metadata, boolean images) {
-    this(table, url, output, video, metadata, images, Enums.DownloadStatus.QUEUED);
+    this(table, url, output, video, metadata, images, Constants.DownloadStatus.QUEUED);
   }
 
   public Download(DownloadTableModel table, String url, String output, Video video,
-                  boolean metadata, boolean images, Enums.DownloadStatus status) {
+                  boolean metadata, boolean images, Constants.DownloadStatus status) {
     this.url = url;
 //    this.url = "http://speedtest.tele2.net/1GB.zip";
     this.output = output;
@@ -59,8 +57,8 @@ public class Download implements Runnable {
     this.metadata = metadata;
     this.images = images;
 
-    if (status == Enums.DownloadStatus.DOWNLOADING) {
-      this.status = Enums.DownloadStatus.QUEUED;
+    if (status == Constants.DownloadStatus.DOWNLOADING) {
+      this.status = Constants.DownloadStatus.QUEUED;
     } else {
       this.status = status;
     }
@@ -99,32 +97,32 @@ public class Download implements Runnable {
     return this.downloaded;
   }
 
-  public Enums.DownloadStatus getStatus() {
+  public Constants.DownloadStatus getStatus() {
     return this.status;
   }
 
   public void cancel() {
-    this.status = Enums.DownloadStatus.CANCELLED;
+    this.status = Constants.DownloadStatus.CANCELLED;
     this.notifyUpdate();
   }
 
   public void fail() {
-    this.status = Enums.DownloadStatus.FAILED;
+    this.status = Constants.DownloadStatus.FAILED;
     this.notifyUpdate();
   }
 
   public void download() {
-    this.status = Enums.DownloadStatus.DOWNLOADING;
+    this.status = Constants.DownloadStatus.DOWNLOADING;
     this.notifyUpdate();
   }
 
   public void queue() {
-    this.status = Enums.DownloadStatus.QUEUED;
+    this.status = Constants.DownloadStatus.QUEUED;
     this.notifyUpdate();
   }
 
   public void complete() {
-    this.status = Enums.DownloadStatus.COMPLETED;
+    this.status = Constants.DownloadStatus.COMPLETED;
     this.notifyUpdate();
   }
 
@@ -132,16 +130,14 @@ public class Download implements Runnable {
 
   public void run() {
     URL url = null;
-    BombinDown.LOGGER.info("Starting download for " + this.output + "...");
+    BombinDownLogger.log("Starting download for " + this.output + "...");
     createDirectoryForShow();
     SwingUtilities.invokeLater(this::download);
 
     try {
       url = new URL(this.url);
     } catch (MalformedURLException e) {
-      BombinDown.LOGGER.log(Level.SEVERE,
-          "There was an error forming the download url " + this.url + ".");
-      BombinDown.LOGGER.log(Level.SEVERE, e.getMessage(), e);
+      BombinDownLogger.error("There was an error forming the download url " + this.url + ".", e);
     }
 
     if (url == null) {
@@ -151,7 +147,8 @@ public class Download implements Runnable {
     HttpURLConnection connection;
 
     if (this.metadata) {
-      File file = new File(Settings.INSTANCE.getDownloadDirectory(),
+      BombinDownLogger.log("Copying metadata for " + this.output + "...");
+      File file = new File(UserPrefs.INSTANCE.getDownloadDirectory(),
           this.subDirectory + "/" + this.subDirectory + ".metadata.json");
       Show show = DataManager.getShow(this.video.videoShow);
 
@@ -162,12 +159,12 @@ public class Download implements Runnable {
           try (BufferedWriter writer = Files.newBufferedWriter(file.toPath())) {
             Constants.GSON.toJson(show, writer);
           } catch (IOException e) {
-            e.printStackTrace();
+            BombinDownLogger.error("There was an error copying metadata for " + show.title + ".");
           }
         }
       }
       String fileName = this.output.substring(0, this.output.lastIndexOf("."));
-      file = new File(Settings.INSTANCE.getDownloadDirectory(),
+      file = new File(UserPrefs.INSTANCE.getDownloadDirectory(),
           this.subDirectory + "/" + fileName + ".metadata.json");
 
       if (!file.exists()) {
@@ -176,13 +173,14 @@ public class Download implements Runnable {
         try (BufferedWriter writer = Files.newBufferedWriter(file.toPath())) {
           Constants.GSON.toJson(orig, writer);
         } catch (IOException e) {
-          e.printStackTrace();
+          BombinDownLogger.error("There was an error copying metadata for " + this.output + ".");
         }
       }
+      BombinDownLogger.log("Copied metadata for " + this.output + ".");
     }
 
     if (this.images) {
-      BombinDown.LOGGER.log(Level.INFO, "Downloading images for " + this.output + "...");
+      BombinDownLogger.log("Downloading images for " + this.output + "...");
       String fileName = this.output.substring(0, this.output.lastIndexOf("."));
 
       if (this.video.image != null && this.video.image.originalUrl != null) {
@@ -191,7 +189,7 @@ public class Download implements Runnable {
       Show show = DataManager.getShow(this.video.videoShow);
 
       if (show != null) {
-        String showName = FileNameCleaner.cleanFileName(show.title, "_");
+        String showName = VideoUtils.cleanFileName(show.title, "_");
 
         if (show.logo != null && show.logo.originalUrl != null) {
           this.downloadSimple(show.logo.originalUrl, showName + "_logo");
@@ -201,7 +199,7 @@ public class Download implements Runnable {
           this.downloadSimple(show.image.originalUrl, showName + "_image");
         }
       }
-      BombinDown.LOGGER.log(Level.INFO, "Downloaded images for " + this.output + ".");
+      BombinDownLogger.log("Downloaded images for " + this.output + ".");
     }
     GiantBombApi.rateLimit();
 
@@ -210,8 +208,7 @@ public class Download implements Runnable {
       connection.setRequestProperty("User-Agent",
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36");
     } catch (IOException e) {
-      BombinDown.LOGGER.log(Level.SEVERE, "There was an error downloading " + this.output + ".");
-      BombinDown.LOGGER.log(Level.SEVERE, e.getMessage(), e);
+      BombinDownLogger.error("There was an error downloading " + this.output + ".", e);
       SwingUtilities.invokeLater(this::fail);
       return;
     }
@@ -234,8 +231,7 @@ public class Download implements Runnable {
         return;
       }
     } catch (IOException e) {
-      BombinDown.LOGGER.log(Level.SEVERE, "There was an error downloading " + this.output + ".");
-      BombinDown.LOGGER.log(Level.SEVERE, e.getMessage(), e);
+      BombinDownLogger.error("There was an error downloading " + this.output + ".", e);
       SwingUtilities.invokeLater(this::fail);
       connection.disconnect();
       return;
@@ -244,7 +240,7 @@ public class Download implements Runnable {
     try (InputStream in = connection.getInputStream()) {
 
       try (FileOutputStream fos = new FileOutputStream(
-          new File(Settings.INSTANCE.getDownloadDirectory(),
+          new File(UserPrefs.INSTANCE.getDownloadDirectory(),
               this.subDirectory + "/" + this.output))) {
 
         try (BufferedOutputStream bout = new BufferedOutputStream(fos, MAX_BUFFER)) {
@@ -262,7 +258,7 @@ public class Download implements Runnable {
 
             if (Thread.interrupted()) {
               connection.disconnect();
-              BombinDown.LOGGER.log(Level.INFO, "Cancelled download for " + this.output + ".");
+              BombinDownLogger.log("Cancelled download for " + this.output + ".");
               SwingUtilities.invokeLater(this::cancel);
               return;
             }
@@ -283,15 +279,14 @@ public class Download implements Runnable {
             }
           }
 
-          if (this.status == Enums.DownloadStatus.DOWNLOADING) {
-            BombinDown.LOGGER.info("Completed download for " + this.output + ".");
+          if (this.status == Constants.DownloadStatus.DOWNLOADING) {
+            BombinDownLogger.log("Completed download for " + this.output + ".");
             SwingUtilities.invokeLater(this::complete);
           }
         }
       }
     } catch (IOException e) {
-      BombinDown.LOGGER.log(Level.SEVERE, "There was an error downloading " + this.output + ".");
-      BombinDown.LOGGER.log(Level.SEVERE, e.getMessage(), e);
+      BombinDownLogger.error("There was an error downloading " + this.output + ".");
       SwingUtilities.invokeLater(this::fail);
     } finally {
       connection.disconnect();
@@ -301,13 +296,13 @@ public class Download implements Runnable {
   private void downloadSimple(String url, String name) {
     HttpURLConnection connection = null;
     GiantBombApi.rateLimit();
-    BombinDown.LOGGER.info("Starting nested download for " + url + "...");
+    BombinDownLogger.log("Starting nested download for " + url + "...");
 
     try {
       URL imagesUrl = new URL(url);
       String ext = imagesUrl.toString().substring(imagesUrl.toString().lastIndexOf("."));
       File file =
-          new File(Settings.INSTANCE.getDownloadDirectory(), this.subDirectory + "/" + name + ext);
+          new File(UserPrefs.INSTANCE.getDownloadDirectory(), this.subDirectory + "/" + name + ext);
 
       if (file.exists()) {
         return;
@@ -331,9 +326,7 @@ public class Download implements Runnable {
         }
       }
     } catch (IOException e) {
-      BombinDown.LOGGER.log(Level.SEVERE,
-          "There was an error downloading " + this.output + ".");
-      BombinDown.LOGGER.log(Level.SEVERE, e.getMessage(), e);
+      BombinDownLogger.error("There was an error downloading " + this.output + ".", e);
     } finally {
 
       if (connection != null) {
@@ -346,9 +339,9 @@ public class Download implements Runnable {
     Show show = DataManager.getShow(video.videoShow);
 
     if (show != null) {
-      this.subDirectory = FileNameCleaner.cleanFileName(show.title, "_");
+      this.subDirectory = VideoUtils.cleanFileName(show.title, "_");
     }
-    new File(Settings.INSTANCE.getDownloadDirectory(), this.subDirectory).mkdir();
+    new File(UserPrefs.INSTANCE.getDownloadDirectory(), this.subDirectory).mkdir();
   }
 
   public void notifyUpdate() {

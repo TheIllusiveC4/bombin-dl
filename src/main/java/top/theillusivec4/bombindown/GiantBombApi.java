@@ -12,10 +12,10 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.logging.Level;
 import top.theillusivec4.bombindown.data.DataManager;
-import top.theillusivec4.bombindown.data.Settings;
+import top.theillusivec4.bombindown.data.UserPrefs;
 import top.theillusivec4.bombindown.data.json.Video;
+import top.theillusivec4.bombindown.util.BombinDownLogger;
 
 public class GiantBombApi {
 
@@ -24,7 +24,7 @@ public class GiantBombApi {
 
   private static HttpClient client;
 
-  public static void initialize() {
+  public static void init() {
     client = HttpClient.newHttpClient();
   }
 
@@ -35,33 +35,31 @@ public class GiantBombApi {
   }
 
   public static void fetchLatestShows() {
-    BombinDown.LOGGER.info("Fetching latest Giant Bomb shows...");
+    BombinDownLogger.log("Fetching latest Giant Bomb shows...");
     rateLimit();
     try {
       String req = "https://www.giantbomb.com/api/video_shows/?offset=100&format=json&api_key=" +
-          Settings.INSTANCE.getApiKey();
+          UserPrefs.INSTANCE.getApiKey();
       HttpRequest request =
           HttpRequest.newBuilder().uri(new URI(req)).timeout(Duration.of(10, ChronoUnit.SECONDS))
               .GET().build();
       HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
       DataManager.updateShows(JsonParser.parseString(response.body()));
     } catch (URISyntaxException | IOException | InterruptedException e) {
-      BombinDown.LOGGER.log(Level.SEVERE,
-          "There was an error fetching the latest Giant Bomb shows.");
-      BombinDown.LOGGER.log(Level.SEVERE, e.getMessage(), e);
+      BombinDownLogger.error("There was an error fetching the latest Giant Bomb shows.", e);
     }
-    BombinDown.LOGGER.info("Shows finished updating.");
+    BombinDownLogger.log("Finished updating shows.");
   }
 
   public static void fetchLatestVideos() {
-    BombinDown.LOGGER.info("Fetching latest Giant Bomb videos...");
+    BombinDownLogger.log("Fetching latest Giant Bomb videos...");
     rateLimit();
     int count = 0;
     boolean found = false;
     try {
       while (!found && count < 168) {
         String req = "https://www.giantbomb.com/api/videos/?offset=" + (count * 100) +
-            "&format=json&api_key=" + Settings.INSTANCE.getApiKey();
+            "&format=json&api_key=" + UserPrefs.INSTANCE.getApiKey();
         HttpRequest request =
             HttpRequest.newBuilder().uri(new URI(req)).timeout(Duration.of(10, ChronoUnit.SECONDS))
                 .GET().build();
@@ -70,11 +68,9 @@ public class GiantBombApi {
         count++;
       }
     } catch (URISyntaxException | IOException | InterruptedException e) {
-      BombinDown.LOGGER.log(Level.SEVERE,
-          "There was an error fetching the latest Giant Bomb videos.");
-      BombinDown.LOGGER.log(Level.SEVERE, e.getMessage(), e);
+      BombinDownLogger.error("There was an error fetching the latest Giant Bomb videos.", e);
     }
-    BombinDown.LOGGER.info("Videos finished updating.");
+    BombinDownLogger.log("Finished updating videos.");
   }
 
   public static void rateLimit() {
@@ -89,8 +85,7 @@ public class GiantBombApi {
 
       if (!msg) {
         msg = true;
-        BombinDown.LOGGER.info(
-            "Request to Giant Bomb API made within 1.5 seconds after the last request and will be delayed.");
+        BombinDownLogger.warn("Waiting for rate limiter...");
       }
     }
     LAST_REQUEST.set(System.currentTimeMillis());
@@ -103,7 +98,7 @@ public class GiantBombApi {
         String url = vid.hdUrl.replace("h5000k", "h8000k");
         url = url.replace("_4000.", "_8000.");
         url = url.replace("_5000.", "_8000.");
-        String req = url + "?api_key=" + Settings.INSTANCE.getApiKey();
+        String req = url + "?api_key=" + UserPrefs.INSTANCE.getApiKey();
         URL net = new URL(req);
         HttpURLConnection connection;
         GiantBombApi.rateLimit();
@@ -117,10 +112,9 @@ public class GiantBombApi {
         }
         connection.disconnect();
       } catch (IOException e) {
-        BombinDown.LOGGER.log(Level.SEVERE,
+        BombinDownLogger.error(
             "There was an error trying to parse higher quality downloads for video " + vid.guid +
-                ".");
-        BombinDown.LOGGER.log(Level.SEVERE, e.getMessage(), e);
+                ".", e);
       }
     }
   }

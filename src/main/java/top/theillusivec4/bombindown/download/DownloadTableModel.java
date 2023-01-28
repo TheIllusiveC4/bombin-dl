@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.table.DefaultTableModel;
-import top.theillusivec4.bombindown.util.Enums;
+import top.theillusivec4.bombindown.util.Constants;
 
 public class DownloadTableModel extends DefaultTableModel {
 
@@ -33,7 +33,7 @@ public class DownloadTableModel extends DefaultTableModel {
       this.downloads.add(download);
       this.downloadMap.put(download.getUrl(), download);
 
-      if (download.getStatus() == Enums.DownloadStatus.QUEUED) {
+      if (download.getStatus() == Constants.DownloadStatus.QUEUED) {
         this.executor.beginDownload(download);
       }
       this.fireTableRowsInserted(this.getRowCount() - 1, this.getRowCount() - 1);
@@ -49,7 +49,7 @@ public class DownloadTableModel extends DefaultTableModel {
         this.downloads.add(download);
         this.downloadMap.put(download.getUrl(), download);
 
-        if (download.getStatus() == Enums.DownloadStatus.QUEUED) {
+        if (download.getStatus() == Constants.DownloadStatus.QUEUED) {
           this.executor.beginDownload(download);
         }
         size++;
@@ -127,13 +127,13 @@ public class DownloadTableModel extends DefaultTableModel {
         return " " + download.getOutput();
       case 1: // Speed
 
-        if (download.getStatus() == Enums.DownloadStatus.DOWNLOADING) {
+        if (download.getStatus() == Constants.DownloadStatus.DOWNLOADING) {
           return " " + getFormattedSpeed(download.getSpeed());
         }
         return "";
       case 2: // Progress
 
-        if (download.getStatus() == Enums.DownloadStatus.COMPLETED) {
+        if (download.getStatus() == Constants.DownloadStatus.COMPLETED) {
           return 100.0f;
         }
         long downloaded = download.getDownloaded();
@@ -148,7 +148,7 @@ public class DownloadTableModel extends DefaultTableModel {
         return " " + getFormattedSize(size);
       case 4: // Remaining Time
 
-        if (download.getStatus() == Enums.DownloadStatus.DOWNLOADING) {
+        if (download.getStatus() == Constants.DownloadStatus.DOWNLOADING) {
           float remaining = (download.getSize() - download.getDownloaded()) / 1024f;
           long time = (long) (remaining / download.getSpeed());
           return " " + getFormattedTime(time);

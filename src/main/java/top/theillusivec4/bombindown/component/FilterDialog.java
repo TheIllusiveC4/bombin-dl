@@ -13,7 +13,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.WindowConstants;
-import top.theillusivec4.bombindown.util.Filter;
+import top.theillusivec4.bombindown.util.video.Filter;
 
 public class FilterDialog extends JDialog {
 

@@ -9,7 +9,7 @@ import java.util.function.BiConsumer;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import top.theillusivec4.bombindown.util.Filter;
+import top.theillusivec4.bombindown.util.video.Filter;
 
 public class FilteredSearch extends JPanel {
 

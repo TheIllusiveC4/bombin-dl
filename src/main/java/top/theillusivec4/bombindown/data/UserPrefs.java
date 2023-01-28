@@ -5,55 +5,26 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.file.Files;
-import java.util.logging.Level;
-import top.theillusivec4.bombindown.BombinDown;
+import java.util.Objects;
+import top.theillusivec4.bombindown.util.BombinDownLogger;
 import top.theillusivec4.bombindown.util.Constants;
-import top.theillusivec4.bombindown.util.Enums;
 
-public class Settings {
+public class UserPrefs {
 
-  public static Settings INSTANCE = new Settings();
+  public static UserPrefs INSTANCE = new UserPrefs();
 
   private String apiKey;
   private boolean premium;
-  private Enums.Quality quality;
+  private Constants.VideoQuality videoQuality;
   private String downloadDirectory;
   private String fileOutputTemplate;
   private boolean includeMetadata;
   private boolean includeImages;
   private int maxDownloads;
 
-  public Settings() {
-    resetToDefaults();
-  }
-
-  public void load() {
-
-    if (FileManager.SETTINGS.exists()) {
-
-      try (Reader reader = Files.newBufferedReader(FileManager.SETTINGS.toPath())) {
-        Settings settings = Constants.GSON.fromJson(reader, Settings.class);
-        this.apiKey = settings.apiKey;
-        this.quality = settings.quality;
-        this.downloadDirectory = settings.downloadDirectory;
-        this.premium = settings.premium;
-        this.fileOutputTemplate = settings.fileOutputTemplate;
-        this.maxDownloads = settings.maxDownloads;
-        this.includeImages = settings.includeImages;
-        this.includeMetadata = settings.includeMetadata;
-      } catch (Exception e) {
-        BombinDown.LOGGER.log(Level.SEVERE,
-            "There was an error reading preferences. Resetting to defaults...");
-        BombinDown.LOGGER.log(Level.SEVERE, e.getMessage(), e);
-        this.resetToDefaults();
-        this.save();
-      }
-    }
-  }
-
-  private void resetToDefaults() {
+  public UserPrefs() {
     this.apiKey = "";
-    this.quality = Enums.Quality.HD;
+    this.videoQuality = Constants.VideoQuality.HD;
     this.downloadDirectory = FileManager.DOWNLOADS.getAbsolutePath();
     this.premium = false;
     this.fileOutputTemplate = "{year}-{month}-{day} - {title}";
@@ -62,9 +33,35 @@ public class Settings {
     this.includeMetadata = false;
   }
 
-  public void save() {
+  public void load() {
 
-    try (Writer writer = Files.newBufferedWriter(FileManager.SETTINGS.toPath())) {
+    if (FileManager.PREFS.exists()) {
+      BombinDownLogger.log("Loading previously saved preferences...");
+
+      try (Reader reader = Files.newBufferedReader(FileManager.PREFS.toPath())) {
+        UserPrefs userPrefs = Constants.GSON.fromJson(reader, UserPrefs.class);
+        this.apiKey = Objects.requireNonNullElse(userPrefs.apiKey, "");
+        this.videoQuality =
+            Objects.requireNonNullElse(userPrefs.videoQuality, Constants.VideoQuality.HD);
+        this.downloadDirectory = Objects.requireNonNullElseGet(userPrefs.downloadDirectory,
+            FileManager.DOWNLOADS::getAbsolutePath);
+        this.premium = userPrefs.premium;
+        this.fileOutputTemplate = Objects.requireNonNullElse(userPrefs.fileOutputTemplate,
+            "{year}-{month}-{day} - {title}");
+        this.maxDownloads = userPrefs.maxDownloads == 0 ? 3 : userPrefs.maxDownloads;
+        this.includeImages = userPrefs.includeImages;
+        this.includeMetadata = userPrefs.includeMetadata;
+      } catch (Exception e) {
+        BombinDownLogger.error("There was an error reading preferences.", e);
+      }
+      BombinDownLogger.log("Finished loading previously saved preferences.");
+    }
+  }
+
+  public void save() {
+    BombinDownLogger.log("Saving preferences...");
+
+    try (Writer writer = Files.newBufferedWriter(FileManager.PREFS.toPath())) {
 
       if (INSTANCE.downloadDirectory.isEmpty()) {
         INSTANCE.downloadDirectory = FileManager.DOWNLOADS.getAbsolutePath();
@@ -75,9 +72,9 @@ public class Settings {
       }
       Constants.GSON.toJson(INSTANCE, writer);
     } catch (IOException e) {
-      BombinDown.LOGGER.log(Level.SEVERE, "There was an error saving preferences.");
-      BombinDown.LOGGER.log(Level.SEVERE, e.getMessage(), e);
+      BombinDownLogger.error("There was an error saving preferences.", e);
     }
+    BombinDownLogger.log("Finished saving preferences.");
   }
 
   public String getApiKey() {
@@ -88,12 +85,12 @@ public class Settings {
     this.apiKey = apiKey;
   }
 
-  public Enums.Quality getQuality() {
-    return quality;
+  public Constants.VideoQuality getQuality() {
+    return videoQuality;
   }
 
-  public void setQuality(Enums.Quality quality) {
-    this.quality = quality;
+  public void setQuality(Constants.VideoQuality videoQuality) {
+    this.videoQuality = videoQuality;
   }
 
   public File getDownloadDirectory() {
