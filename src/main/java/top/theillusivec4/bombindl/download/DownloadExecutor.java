@@ -24,7 +24,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import top.theillusivec4.bombindl.data.UserPrefs;
-import top.theillusivec4.bombindl.util.BombinDLLogger;
+import top.theillusivec4.bombindl.util.BDLogger;
 
 public class DownloadExecutor {
 
@@ -40,7 +40,7 @@ public class DownloadExecutor {
   }
 
   public void setMaxDownloads(int num) {
-    BombinDLLogger.log("Setting maximum simultaneous downloads to " + num + "...");
+    BDLogger.log("Setting maximum simultaneous downloads to " + num + "...");
     int current = this.threadPoolExecutor.getCorePoolSize();
 
     try {
@@ -52,7 +52,7 @@ public class DownloadExecutor {
         this.threadPoolExecutor.setMaximumPoolSize(num);
       }
     } catch (IllegalArgumentException e) {
-      BombinDLLogger.error("There was an error changing maximum simultaneous downloads.", e);
+      BDLogger.error("There was an error changing maximum simultaneous downloads.", e);
     }
   }
 

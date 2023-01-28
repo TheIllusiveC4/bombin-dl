@@ -43,7 +43,7 @@ import top.theillusivec4.bombindl.data.json.Cache;
 import top.theillusivec4.bombindl.data.json.Show;
 import top.theillusivec4.bombindl.data.json.Video;
 import top.theillusivec4.bombindl.data.json.base.OriginalVideo;
-import top.theillusivec4.bombindl.util.BombinDLLogger;
+import top.theillusivec4.bombindl.util.BDLogger;
 import top.theillusivec4.bombindl.util.Constants;
 
 public class DataManager {
@@ -66,7 +66,7 @@ public class DataManager {
   }
 
   public static void load() {
-    BombinDLLogger.log("Loading seed data...");
+    BDLogger.log("Loading seed data...");
     ClassLoader classloader = Thread.currentThread().getContextClassLoader();
 
     try (InputStream is = classloader.getResourceAsStream("seed_shows.json")) {
@@ -82,11 +82,11 @@ public class DataManager {
           SHOWS_TO_VIDEOS.put("", new CopyOnWriteArrayList<>());
           lastShowRecorded = shows[shows.length - 1].guid;
         } catch (IOException e) {
-          BombinDLLogger.error("There was an error loading show data.", e);
+          BDLogger.error("There was an error loading show data.", e);
         }
       }
     } catch (IOException e) {
-      BombinDLLogger.error("There was an error reading show data.", e);
+      BDLogger.error("There was an error reading show data.", e);
     }
 
     try (InputStream is = classloader.getResourceAsStream("seed_videos.json")) {
@@ -110,11 +110,11 @@ public class DataManager {
           }
           lastVideoRecorded = videos[0].guid;
         } catch (IOException e) {
-          BombinDLLogger.error("There was an error loading video data.", e);
+          BDLogger.error("There was an error loading video data.", e);
         }
       }
     } catch (IOException e) {
-      BombinDLLogger.error("There was an error reading video data.", e);
+      BDLogger.error("There was an error reading video data.", e);
     }
 
     if (FileManager.CACHE.exists()) {
@@ -147,10 +147,10 @@ public class DataManager {
           lastVideoRecorded = vids[0].guid;
         }
       } catch (Exception e) {
-        BombinDLLogger.error("There was an error reading new shows and videos.", e);
+        BDLogger.error("There was an error reading new shows and videos.", e);
       }
     }
-    BombinDLLogger.log("Finished loading seed data.");
+    BDLogger.log("Finished loading seed data.");
   }
 
   public static Collection<Show> getShows() {
@@ -196,7 +196,7 @@ public class DataManager {
       NEWEST_SHOWS.put(show.guid, show);
       SHOWS.put(show.guid, show);
     }
-    BombinDLLogger.log("Found " + showsToAdd.size() + " new shows.");
+    BDLogger.log("Found " + showsToAdd.size() + " new shows.");
   }
 
   public static boolean updateVideos(JsonElement jsonElement) {
@@ -227,12 +227,12 @@ public class DataManager {
       NEWEST_VIDS.put(video.guid, video);
       SHOWS_TO_VIDEOS.computeIfAbsent(showGuid, (k) -> new ArrayList<>()).add(video.guid);
     }
-    BombinDLLogger.log("Found " + videosToAdd.size() + " new videos.");
+    BDLogger.log("Found " + videosToAdd.size() + " new videos.");
     return found;
   }
 
   public static void writeLatestUpdates() {
-    BombinDLLogger.log("Saving updates...");
+    BDLogger.log("Saving updates...");
     Show[] shows = new Show[] {};
     Video[] videos = new Video[] {};
     String timestamp = ZonedDateTime.now(ZoneId.systemDefault())
@@ -259,8 +259,8 @@ public class DataManager {
     try (Writer writer = Files.newBufferedWriter(FileManager.CACHE.toPath())) {
       Constants.GSON.toJson(new Cache(timestamp, shows, videos), writer);
     } catch (IOException e) {
-      BombinDLLogger.error("There was an error while saving latest updates.", e);
+      BDLogger.error("There was an error while saving latest updates.", e);
     }
-    BombinDLLogger.log("Finished saving updates.");
+    BDLogger.log("Finished saving updates.");
   }
 }

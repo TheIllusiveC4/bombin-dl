@@ -35,7 +35,7 @@ import top.theillusivec4.bombindl.data.UserPrefs;
 import top.theillusivec4.bombindl.data.json.Show;
 import top.theillusivec4.bombindl.data.json.Video;
 import top.theillusivec4.bombindl.data.json.base.OriginalVideo;
-import top.theillusivec4.bombindl.util.BombinDLLogger;
+import top.theillusivec4.bombindl.util.BDLogger;
 import top.theillusivec4.bombindl.util.Constants;
 import top.theillusivec4.bombindl.util.video.VideoUtils;
 
@@ -147,14 +147,14 @@ public class Download implements Runnable {
 
   public void run() {
     URL url = null;
-    BombinDLLogger.log("Starting download for " + this.output + " from " + this.url + "...");
+    BDLogger.log("Starting download for " + this.output + " from " + this.url + "...");
     createDirectoryForShow();
     SwingUtilities.invokeLater(this::download);
 
     try {
       url = new URL(this.url);
     } catch (MalformedURLException e) {
-      BombinDLLogger.error("There was an error forming the download url " + this.url + ".", e);
+      BDLogger.error("There was an error forming the download url " + this.url + ".", e);
     }
 
     if (url == null) {
@@ -164,7 +164,7 @@ public class Download implements Runnable {
     HttpURLConnection connection;
 
     if (this.metadata) {
-      BombinDLLogger.log("Copying metadata for " + this.output + "...");
+      BDLogger.log("Copying metadata for " + this.output + "...");
       File file = new File(UserPrefs.INSTANCE.getDownloadDirectory(),
           this.subDirectory + "/" + this.subDirectory + ".metadata.json");
       Show show = DataManager.getShow(this.video.videoShow);
@@ -176,7 +176,7 @@ public class Download implements Runnable {
           try (BufferedWriter writer = Files.newBufferedWriter(file.toPath())) {
             Constants.GSON.toJson(show, writer);
           } catch (IOException e) {
-            BombinDLLogger.error("There was an error copying metadata for " + show.title + ".");
+            BDLogger.error("There was an error copying metadata for " + show.title + ".");
           }
         }
       }
@@ -190,14 +190,14 @@ public class Download implements Runnable {
         try (BufferedWriter writer = Files.newBufferedWriter(file.toPath())) {
           Constants.GSON.toJson(orig, writer);
         } catch (IOException e) {
-          BombinDLLogger.error("There was an error copying metadata for " + this.output + ".");
+          BDLogger.error("There was an error copying metadata for " + this.output + ".");
         }
       }
-      BombinDLLogger.log("Copied metadata for " + this.output + ".");
+      BDLogger.log("Copied metadata for " + this.output + ".");
     }
 
     if (this.images) {
-      BombinDLLogger.log("Downloading images for " + this.output + "...");
+      BDLogger.log("Downloading images for " + this.output + "...");
       String fileName = this.output.substring(0, this.output.lastIndexOf("."));
 
       if (this.video.image != null && this.video.image.originalUrl != null) {
@@ -216,7 +216,7 @@ public class Download implements Runnable {
           this.downloadSimple(show.image.originalUrl, showName + "_image");
         }
       }
-      BombinDLLogger.log("Downloaded images for " + this.output + ".");
+      BDLogger.log("Downloaded images for " + this.output + ".");
     }
     GiantBombAPI.rateLimit();
 
@@ -225,7 +225,7 @@ public class Download implements Runnable {
       connection.setRequestProperty("User-Agent",
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36");
     } catch (IOException e) {
-      BombinDLLogger.error("There was an error downloading " + this.output + ".", e);
+      BDLogger.error("There was an error downloading " + this.output + ".", e);
       SwingUtilities.invokeLater(this::fail);
       return;
     }
@@ -248,7 +248,7 @@ public class Download implements Runnable {
         return;
       }
     } catch (IOException e) {
-      BombinDLLogger.error("There was an error downloading " + this.output + ".", e);
+      BDLogger.error("There was an error downloading " + this.output + ".", e);
       SwingUtilities.invokeLater(this::fail);
       connection.disconnect();
       return;
@@ -275,7 +275,7 @@ public class Download implements Runnable {
 
             if (Thread.interrupted()) {
               connection.disconnect();
-              BombinDLLogger.log("Cancelled download for " + this.output + ".");
+              BDLogger.log("Cancelled download for " + this.output + ".");
               SwingUtilities.invokeLater(this::cancel);
               return;
             }
@@ -297,13 +297,13 @@ public class Download implements Runnable {
           }
 
           if (this.status == Constants.DownloadStatus.DOWNLOADING) {
-            BombinDLLogger.log("Completed download for " + this.output + " from " + this.url + ".");
+            BDLogger.log("Completed download for " + this.output + " from " + this.url + ".");
             SwingUtilities.invokeLater(this::complete);
           }
         }
       }
     } catch (IOException e) {
-      BombinDLLogger.error("There was an error downloading " + this.output + ".");
+      BDLogger.error("There was an error downloading " + this.output + ".");
       SwingUtilities.invokeLater(this::fail);
     } finally {
       connection.disconnect();
@@ -313,7 +313,7 @@ public class Download implements Runnable {
   private void downloadSimple(String url, String name) {
     HttpURLConnection connection = null;
     GiantBombAPI.rateLimit();
-    BombinDLLogger.log("Starting nested download for " + url + "...");
+    BDLogger.log("Starting nested download for " + url + "...");
 
     try {
       URL imagesUrl = new URL(url);
@@ -343,7 +343,7 @@ public class Download implements Runnable {
         }
       }
     } catch (IOException e) {
-      BombinDLLogger.error("There was an error downloading " + this.output + ".", e);
+      BDLogger.error("There was an error downloading " + this.output + ".", e);
     } finally {
 
       if (connection != null) {

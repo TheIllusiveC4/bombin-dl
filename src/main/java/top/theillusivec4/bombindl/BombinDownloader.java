@@ -43,9 +43,9 @@ import top.theillusivec4.bombindl.data.DataManager;
 import top.theillusivec4.bombindl.data.FileManager;
 import top.theillusivec4.bombindl.data.UserPrefs;
 import top.theillusivec4.bombindl.data.json.Video;
-import top.theillusivec4.bombindl.util.BombinDLLogger;
+import top.theillusivec4.bombindl.util.BDLogger;
 
-public class BombinDL {
+public class BombinDownloader {
 
   private static DownloadContainer downloadContainer;
   private static ShowsContainer showsContainer;
@@ -54,11 +54,11 @@ public class BombinDL {
   private static JTabbedPane mainPane;
 
   public static void main(String[] args) {
-    BombinDLLogger.load();
+    BDLogger.load();
     FileManager.load();
     DataManager.load();
     GiantBombAPI.init();
-    SwingUtilities.invokeLater(BombinDL::initGui);
+    SwingUtilities.invokeLater(BombinDownloader::initGui);
   }
 
   public static int addDownloads(TreeSet<Video> videos) {
@@ -66,11 +66,11 @@ public class BombinDL {
   }
 
   private static void initGui() {
-    BombinDLLogger.log("Starting application...");
+    BDLogger.log("Starting application...");
     try {
       UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
     } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
-      BombinDLLogger.warn("Failed to set GUI appearance.", e);
+      BDLogger.warn("Failed to set GUI appearance.", e);
     }
 
     if (UserPrefs.INSTANCE.getApiKey().isEmpty()) {
@@ -90,8 +90,8 @@ public class BombinDL {
   }
 
   private static void createAndShowGUI() {
-    BombinDLLogger.log("Setting up GUI...");
-    JFrame frame = new JFrame("Bombin' DL");
+    BDLogger.log("Setting up GUI...");
+    JFrame frame = new JFrame("Bombin' Downloader");
     frame.setJMenuBar(new MenuBar(frame));
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     frame.addWindowListener(new WindowAdapter() {
@@ -155,11 +155,11 @@ public class BombinDL {
       dialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
       dialog.setVisible(true);
     } else {
-      BombinDLLogger.log(
+      BDLogger.log(
           "Cached updates were last timestamped within 24 hours, skipping latest update check...");
       addTabs(frame);
     }
-    BombinDLLogger.log("Finished loading GUI.");
+    BDLogger.log("Finished loading GUI.");
   }
 
   private static void addTabs(JFrame frame) {

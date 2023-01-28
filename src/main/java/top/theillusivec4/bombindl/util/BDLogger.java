@@ -24,7 +24,7 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import top.theillusivec4.bombindl.data.FileManager;
 
-public class BombinDLLogger {
+public class BDLogger {
 
   private static final Logger LOGGER = Logger.getLogger(Constants.ID);
 

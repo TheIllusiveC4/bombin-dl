@@ -25,7 +25,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import top.theillusivec4.bombindl.data.json.Video;
-import top.theillusivec4.bombindl.util.BombinDLLogger;
+import top.theillusivec4.bombindl.util.BDLogger;
 
 public class Filter {
 
@@ -83,7 +83,7 @@ public class Filter {
         return false;
       }
     } catch (ParseException e) {
-      BombinDLLogger.error("There was an error formatting date " + video.publishDate + ".", e);
+      BDLogger.error("There was an error formatting date " + video.publishDate + ".", e);
     }
     return true;
   }

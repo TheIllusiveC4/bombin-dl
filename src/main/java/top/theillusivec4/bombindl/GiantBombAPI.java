@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import top.theillusivec4.bombindl.data.DataManager;
 import top.theillusivec4.bombindl.data.UserPrefs;
 import top.theillusivec4.bombindl.data.json.Video;
-import top.theillusivec4.bombindl.util.BombinDLLogger;
+import top.theillusivec4.bombindl.util.BDLogger;
 
 public class GiantBombAPI {
 
@@ -52,7 +52,7 @@ public class GiantBombAPI {
   }
 
   public static void fetchLatestShows() {
-    BombinDLLogger.log("Fetching latest Giant Bomb shows...");
+    BDLogger.log("Fetching latest Giant Bomb shows...");
     rateLimit();
     try {
       String req = "https://www.giantbomb.com/api/video_shows/?offset=100&format=json&api_key=" +
@@ -63,13 +63,13 @@ public class GiantBombAPI {
       HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
       DataManager.updateShows(JsonParser.parseString(response.body()));
     } catch (URISyntaxException | IOException | InterruptedException e) {
-      BombinDLLogger.error("There was an error fetching the latest Giant Bomb shows.", e);
+      BDLogger.error("There was an error fetching the latest Giant Bomb shows.", e);
     }
-    BombinDLLogger.log("Finished updating shows.");
+    BDLogger.log("Finished updating shows.");
   }
 
   public static void fetchLatestVideos() {
-    BombinDLLogger.log("Fetching latest Giant Bomb videos...");
+    BDLogger.log("Fetching latest Giant Bomb videos...");
     rateLimit();
     int count = 0;
     boolean found = false;
@@ -85,9 +85,9 @@ public class GiantBombAPI {
         count++;
       }
     } catch (URISyntaxException | IOException | InterruptedException e) {
-      BombinDLLogger.error("There was an error fetching the latest Giant Bomb videos.", e);
+      BDLogger.error("There was an error fetching the latest Giant Bomb videos.", e);
     }
-    BombinDLLogger.log("Finished updating videos.");
+    BDLogger.log("Finished updating videos.");
   }
 
   public static void rateLimit() {
@@ -102,7 +102,7 @@ public class GiantBombAPI {
 
       if (!msg) {
         msg = true;
-        BombinDLLogger.warn("Waiting for rate limiter...");
+        BDLogger.warn("Waiting for rate limiter...");
       }
     }
     LAST_REQUEST.set(System.currentTimeMillis());
@@ -129,7 +129,7 @@ public class GiantBombAPI {
         }
         connection.disconnect();
       } catch (IOException e) {
-        BombinDLLogger.error(
+        BDLogger.error(
             "There was an error trying to parse higher quality downloads for video " + vid.guid +
                 ".", e);
       }

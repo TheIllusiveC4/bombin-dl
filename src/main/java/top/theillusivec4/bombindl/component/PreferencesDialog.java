@@ -36,7 +36,7 @@ import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.WindowConstants;
-import top.theillusivec4.bombindl.BombinDL;
+import top.theillusivec4.bombindl.BombinDownloader;
 import top.theillusivec4.bombindl.data.UserPrefs;
 import top.theillusivec4.bombindl.util.Constants;
 
@@ -216,7 +216,7 @@ public class PreferencesDialog extends JDialog {
       UserPrefs.INSTANCE.setDownloadDirectory(new File(this.directoryField.getText()));
       int max = model.getNumber().intValue();
       UserPrefs.INSTANCE.setMaxDownloads(max);
-      BombinDL.setMaxDownloads(max);
+      BombinDownloader.setMaxDownloads(max);
       UserPrefs.INSTANCE.setIncludeImages(this.imagesBox.isSelected());
       UserPrefs.INSTANCE.setIncludeMetadata(this.metadataBox.isSelected());
       UserPrefs.INSTANCE.save();

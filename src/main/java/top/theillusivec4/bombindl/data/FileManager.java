@@ -32,7 +32,7 @@ import java.util.Collection;
 import java.util.List;
 import top.theillusivec4.bombindl.data.json.DownloadTracker;
 import top.theillusivec4.bombindl.data.json.Video;
-import top.theillusivec4.bombindl.util.BombinDLLogger;
+import top.theillusivec4.bombindl.util.BDLogger;
 import top.theillusivec4.bombindl.util.Constants;
 import top.theillusivec4.bombindl.util.video.VideoUtils;
 
@@ -47,7 +47,7 @@ public class FileManager {
   public static final File DOWNLOAD_TRACKING = new File(DATA, "downloads.json");
 
   public static void load() {
-    BombinDLLogger.log("Loading directories...");
+    BDLogger.log("Loading directories...");
     DOWNLOADS.mkdir();
     DATA.mkdir();
     EXPORTS.mkdir();
@@ -57,16 +57,16 @@ public class FileManager {
       try (Writer writer = Files.newBufferedWriter(PREFS.toPath())) {
         Constants.GSON.toJson(UserPrefs.INSTANCE, writer);
       } catch (IOException e) {
-        BombinDLLogger.error("There was an error accessing saved preferences.", e);
+        BDLogger.error("There was an error accessing saved preferences.", e);
       }
     } else {
       UserPrefs.INSTANCE.load();
     }
-    BombinDLLogger.log("Finished loading directories.");
+    BDLogger.log("Finished loading directories.");
   }
 
   public static WriteResult writeLinks(Collection<Video> videos) {
-    BombinDLLogger.log("Saving " + videos.size() + " download link(s)...");
+    BDLogger.log("Saving " + videos.size() + " download link(s)...");
     String fileName =
         LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HHmmss")) + ".txt";
     Path path = new File(EXPORTS, fileName).toPath();
@@ -85,26 +85,26 @@ public class FileManager {
         }
       }
     } catch (IOException e) {
-      BombinDLLogger.error("There was an error exporting links.", e);
+      BDLogger.error("There was an error exporting links.", e);
       return null;
     }
-    BombinDLLogger.log("Finished saving " + count + " download link(s) to " + path + ".");
+    BDLogger.log("Finished saving " + count + " download link(s) to " + path + ".");
     return new WriteResult(fileName, count);
   }
 
   public static void writeDownloads(List<DownloadTracker> trackers) {
-    BombinDLLogger.log("Saving " + trackers.size() + " download(s) in progress...");
+    BDLogger.log("Saving " + trackers.size() + " download(s) in progress...");
 
     try (BufferedWriter writer = Files.newBufferedWriter(DOWNLOAD_TRACKING.toPath())) {
       Constants.GSON.toJson(trackers, writer);
     } catch (IOException e) {
-      BombinDLLogger.error("There was an error saving tracked downloads.", e);
+      BDLogger.error("There was an error saving tracked downloads.", e);
     }
-    BombinDLLogger.log("Finished saving downloads in progress.");
+    BDLogger.log("Finished saving downloads in progress.");
   }
 
   public static List<DownloadTracker> readDownloads() {
-    BombinDLLogger.log("Loading saved downloads in progress...");
+    BDLogger.log("Loading saved downloads in progress...");
     List<DownloadTracker> trackers = new ArrayList<>();
 
     if (DOWNLOAD_TRACKING.exists()) {
@@ -113,10 +113,10 @@ public class FileManager {
         DownloadTracker[] json = Constants.GSON.fromJson(reader, DownloadTracker[].class);
         trackers.addAll(Arrays.asList(json));
       } catch (IOException e) {
-        BombinDLLogger.error("There was an error loading saved tracked downloads.", e);
+        BDLogger.error("There was an error loading saved tracked downloads.", e);
       }
     }
-    BombinDLLogger.log("Loaded " + trackers.size() + " saved download(s) in progress.");
+    BDLogger.log("Loaded " + trackers.size() + " saved download(s) in progress.");
     return trackers;
   }
 

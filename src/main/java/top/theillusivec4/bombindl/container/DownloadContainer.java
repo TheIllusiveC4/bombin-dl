@@ -55,7 +55,7 @@ import top.theillusivec4.bombindl.data.json.Video;
 import top.theillusivec4.bombindl.download.Download;
 import top.theillusivec4.bombindl.download.DownloadProgressBar;
 import top.theillusivec4.bombindl.download.DownloadTableModel;
-import top.theillusivec4.bombindl.util.BombinDLLogger;
+import top.theillusivec4.bombindl.util.BDLogger;
 import top.theillusivec4.bombindl.util.Constants;
 import top.theillusivec4.bombindl.util.video.VideoUtils;
 
@@ -268,7 +268,7 @@ public class DownloadContainer extends JPanel {
       dialog.setSelected(guids);
       dialog.setVisible(true);
     } catch (IOException e) {
-      BombinDLLogger.error(
+      BDLogger.error(
           "There was an error loading the file " + selectedFile + " into downloads.", e);
     }
   }
@@ -317,7 +317,7 @@ public class DownloadContainer extends JPanel {
           output = output.replace("{day}",
               "" + String.format("%02d", calendar.get(Calendar.DAY_OF_MONTH)));
         } catch (ParseException e) {
-          BombinDLLogger.error("There was an error parsing date " + video.publishDate + ".", e);
+          BDLogger.error("There was an error parsing date " + video.publishDate + ".", e);
         }
         output = VideoUtils.cleanFileName(output, "_");
         downloads.add(
@@ -331,7 +331,7 @@ public class DownloadContainer extends JPanel {
             "No URL Found", JOptionPane.ERROR_MESSAGE);
       }
     }
-    BombinDLLogger.log("Queued " + downloads.size() + " downloads.");
+    BDLogger.log("Queued " + downloads.size() + " downloads.");
     this.tableModel.addDownloads(downloads);
     return downloads.size();
   }

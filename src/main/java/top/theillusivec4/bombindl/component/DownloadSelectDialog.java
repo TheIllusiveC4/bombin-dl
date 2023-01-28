@@ -36,7 +36,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.WindowConstants;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-import top.theillusivec4.bombindl.BombinDL;
+import top.theillusivec4.bombindl.BombinDownloader;
 import top.theillusivec4.bombindl.data.DataManager;
 import top.theillusivec4.bombindl.data.FileManager;
 import top.theillusivec4.bombindl.data.UserPrefs;
@@ -159,7 +159,7 @@ public class DownloadSelectDialog extends JDialog {
         return;
       }
 
-      if (BombinDL.addDownloads(videos) > 0) {
+      if (BombinDownloader.addDownloads(videos) > 0) {
         JOptionPane.showMessageDialog(this, "Queued " + videos.size() + " videos for download.");
         this.fireDisposeListeners();
         this.dispose();

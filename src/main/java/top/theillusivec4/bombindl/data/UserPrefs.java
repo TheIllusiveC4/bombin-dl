@@ -23,7 +23,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.util.Objects;
-import top.theillusivec4.bombindl.util.BombinDLLogger;
+import top.theillusivec4.bombindl.util.BDLogger;
 import top.theillusivec4.bombindl.util.Constants;
 
 public class UserPrefs {
@@ -53,7 +53,7 @@ public class UserPrefs {
   public void load() {
 
     if (FileManager.PREFS.exists()) {
-      BombinDLLogger.log("Loading previously saved preferences...");
+      BDLogger.log("Loading previously saved preferences...");
 
       try (Reader reader = Files.newBufferedReader(FileManager.PREFS.toPath())) {
         UserPrefs userPrefs = Constants.GSON.fromJson(reader, UserPrefs.class);
@@ -69,14 +69,14 @@ public class UserPrefs {
         this.includeImages = userPrefs.includeImages;
         this.includeMetadata = userPrefs.includeMetadata;
       } catch (Exception e) {
-        BombinDLLogger.error("There was an error reading preferences.", e);
+        BDLogger.error("There was an error reading preferences.", e);
       }
-      BombinDLLogger.log("Finished loading previously saved preferences.");
+      BDLogger.log("Finished loading previously saved preferences.");
     }
   }
 
   public void save() {
-    BombinDLLogger.log("Saving preferences...");
+    BDLogger.log("Saving preferences...");
 
     try (Writer writer = Files.newBufferedWriter(FileManager.PREFS.toPath())) {
 
@@ -89,9 +89,9 @@ public class UserPrefs {
       }
       Constants.GSON.toJson(INSTANCE, writer);
     } catch (IOException e) {
-      BombinDLLogger.error("There was an error saving preferences.", e);
+      BDLogger.error("There was an error saving preferences.", e);
     }
-    BombinDLLogger.log("Finished saving preferences.");
+    BDLogger.log("Finished saving preferences.");
   }
 
   public String getApiKey() {
