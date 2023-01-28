@@ -1,0 +1,6 @@
+/src/resources
+/.idea
+/bombin-down
+/lib
+/out
+*.iml
