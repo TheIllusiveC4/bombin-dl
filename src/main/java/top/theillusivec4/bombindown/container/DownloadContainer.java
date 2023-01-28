@@ -207,9 +207,9 @@ public class DownloadContainer extends JPanel {
     second.setMinWidth(80);
     second.setMaxWidth(80);
     TableColumn third = columnModel.getColumn(2);
-    third.setMinWidth(100);
-    third.setPreferredWidth(200);
-    third.setMaxWidth(400);
+    third.setMinWidth(80);
+    third.setPreferredWidth(100);
+    third.setMaxWidth(200);
     TableColumn fourth = columnModel.getColumn(3);
     fourth.setMinWidth(80);
     fourth.setMaxWidth(80);

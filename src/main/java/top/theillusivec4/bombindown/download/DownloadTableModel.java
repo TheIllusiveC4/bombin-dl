@@ -147,10 +147,17 @@ public class DownloadTableModel extends DefaultTableModel {
         }
         return " " + getFormattedSize(size);
       case 4: // Remaining Time
+        long downloadSize = download.getSize();
 
-        if (download.getStatus() == Constants.DownloadStatus.DOWNLOADING) {
-          float remaining = (download.getSize() - download.getDownloaded()) / 1024f;
+        if (downloadSize == 0L) {
+          return "";
+        } else if (download.getStatus() == Constants.DownloadStatus.DOWNLOADING) {
+          float remaining = (downloadSize - download.getDownloaded()) / 1024f;
           long time = (long) (remaining / download.getSpeed());
+
+          if (time > 362439L) {
+            return ">99:99:99";
+          }
           return " " + getFormattedTime(time);
         }
         return "";

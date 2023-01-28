@@ -130,7 +130,7 @@ public class Download implements Runnable {
 
   public void run() {
     URL url = null;
-    BombinDownLogger.log("Starting download for " + this.output + "...");
+    BombinDownLogger.log("Starting download for " + this.output + " from " + this.url + "...");
     createDirectoryForShow();
     SwingUtilities.invokeLater(this::download);
 
@@ -280,7 +280,7 @@ public class Download implements Runnable {
           }
 
           if (this.status == Constants.DownloadStatus.DOWNLOADING) {
-            BombinDownLogger.log("Completed download for " + this.output + ".");
+            BombinDownLogger.log("Completed download for " + this.output + " from " + this.url + ".");
             SwingUtilities.invokeLater(this::complete);
           }
         }
