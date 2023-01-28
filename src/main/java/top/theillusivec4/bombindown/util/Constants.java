@@ -23,7 +23,8 @@ import com.google.gson.GsonBuilder;
 public class Constants {
 
   public static final String ID = "bombin-down";
-  public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+  public static final Gson GSON =
+      new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
 
   public enum VideoQuality {
     HD("HD"),

@@ -166,7 +166,7 @@ public class DownloadTableModel extends DefaultTableModel {
       case 4: // Remaining Time
         long downloadSize = download.getSize();
 
-        if (downloadSize == 0L) {
+        if (downloadSize == 0L || download.getSpeed() == 0.0F) {
           return "";
         } else if (download.getStatus() == Constants.DownloadStatus.DOWNLOADING) {
           float remaining = (downloadSize - download.getDownloaded()) / 1024f;
