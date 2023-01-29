@@ -3,6 +3,8 @@
 A Java application providing an easy-to-use GUI for searching and downloading shows and videos from Giant Bomb using the
 Giant Bomb API.
 
+![](https://i.ibb.co/QXdxLGZ/bombindl.png)
+
 ## Features
 
 ### Search
