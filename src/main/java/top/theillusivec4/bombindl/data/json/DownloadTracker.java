@@ -17,7 +17,7 @@
 
 package top.theillusivec4.bombindl.data.json;
 
-public record DownloadTracker(String url, String video, String output, String status,
+public record DownloadTracker(String date, String url, String video, String output, String status,
                               boolean metadata, boolean images) {
 
 }

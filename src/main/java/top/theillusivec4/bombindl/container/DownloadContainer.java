@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -283,8 +285,13 @@ public class DownloadContainer extends JPanel {
         Video vid = DataManager.getVideo(tracker.video());
 
         if (vid != null) {
+          String date = tracker.date();
+
+          if (date == null) {
+            date = LocalDateTime.now(ZoneId.systemDefault()).minusYears(1).toString();
+          }
           this.tableModel.addDownload(
-              new Download(this.tableModel, tracker.url(), tracker.output(), vid,
+              new Download(this.tableModel, date, tracker.url(), tracker.output(), vid,
                   tracker.metadata(), tracker.images(),
                   Constants.DownloadStatus.of(tracker.status())));
         } else {
@@ -374,8 +381,9 @@ public class DownloadContainer extends JPanel {
 
       if (download != null) {
         trackers.add(
-            new DownloadTracker(download.getUrl(), download.getVideo().guid, download.getOutput(),
-                download.getStatus().getText(), download.isMetadata(), download.isImages()));
+            new DownloadTracker(download.getDate(), download.getUrl(), download.getVideo().guid,
+                download.getOutput(), download.getStatus().getText(), download.isMetadata(),
+                download.isImages()));
       }
     }
     FileManager.writeDownloads(trackers);

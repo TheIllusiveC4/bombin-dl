@@ -27,6 +27,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Objects;
 import javax.swing.SwingUtilities;
 import top.theillusivec4.bombindl.GiantBombAPI;
@@ -41,6 +43,7 @@ import top.theillusivec4.bombindl.util.video.VideoUtils;
 
 public class Download implements Runnable {
 
+  private final String date;
   private final String url;
   private final String output;
   private final Video video;
@@ -59,11 +62,18 @@ public class Download implements Runnable {
 
   public Download(DownloadTableModel table, String url, String output, Video video,
                   boolean metadata, boolean images) {
-    this(table, url, output, video, metadata, images, Constants.DownloadStatus.QUEUED);
+    this(table, LocalDateTime.now(ZoneId.systemDefault()).toString(), url, output, video, metadata,
+        images, Constants.DownloadStatus.QUEUED);
   }
 
-  public Download(DownloadTableModel table, String url, String output, Video video,
+  public Download(DownloadTableModel table, String date, String url, String output, Video video,
+                  boolean metadata, boolean images) {
+    this(table, date, url, output, video, metadata, images, Constants.DownloadStatus.QUEUED);
+  }
+
+  public Download(DownloadTableModel table, String date, String url, String output, Video video,
                   boolean metadata, boolean images, Constants.DownloadStatus status) {
+    this.date = date;
     this.url = url;
 //    this.url = "http://speedtest.tele2.net/1GB.zip";
     this.output = output;
@@ -80,6 +90,10 @@ public class Download implements Runnable {
       this.status = status;
     }
     this.subDirectory = "Miscellaneous";
+  }
+
+  public String getDate() {
+    return this.date;
   }
 
   public boolean isMetadata() {
