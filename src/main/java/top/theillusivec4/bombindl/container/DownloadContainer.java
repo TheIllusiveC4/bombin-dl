@@ -287,7 +287,7 @@ public class DownloadContainer extends JPanel {
         if (vid != null) {
           String date = tracker.date();
 
-          if (date == null) {
+          if (date == null || date.isEmpty()) {
             date = LocalDateTime.now(ZoneId.systemDefault()).minusYears(1).toString();
           }
           this.tableModel.addDownload(
@@ -300,6 +300,7 @@ public class DownloadContainer extends JPanel {
               JOptionPane.ERROR_MESSAGE);
         }
       }
+      this.tableModel.sortDownloads();
     }
   }
 

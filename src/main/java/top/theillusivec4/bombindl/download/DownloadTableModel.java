@@ -18,6 +18,7 @@
 package top.theillusivec4.bombindl.download;
 
 import java.text.DecimalFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -74,6 +75,7 @@ public class DownloadTableModel extends DefaultTableModel {
     }
     this.fireTableRowsInserted(this.getRowCount() - 1,
         this.getRowCount() + size - 2);
+    this.sortDownloads();
   }
 
   public Download getDownload(int row) {
@@ -87,12 +89,41 @@ public class DownloadTableModel extends DefaultTableModel {
   public void beginDownload(Download download) {
     download.queue();
     this.executor.beginDownload(download);
-    updateDownload(download);
+    this.updateDownload(download);
   }
 
   public void updateDownload(Download download) {
     int row = this.downloads.indexOf(download);
+
+    if (download.getStatus() == Constants.DownloadStatus.COMPLETED) {
+      this.sortDownloads();
+      return;
+    }
     this.fireTableRowsUpdated(row, row);
+  }
+
+  public void sortDownloads() {
+    this.downloads.sort((o1, o2) -> {
+
+      if ((o1.getStatus() != Constants.DownloadStatus.COMPLETED &&
+          o2.getStatus() != Constants.DownloadStatus.COMPLETED) ||
+          (o1.getStatus() == Constants.DownloadStatus.COMPLETED &&
+              o2.getStatus() == Constants.DownloadStatus.COMPLETED)) {
+        int compareDates =
+            LocalDateTime.parse(o1.getDate()).compareTo(LocalDateTime.parse(o2.getDate()));
+
+        if (compareDates == 0) {
+          return o1.getVideo().compareTo(o2.getVideo());
+        }
+        return compareDates;
+      } else if (o1.getStatus() == Constants.DownloadStatus.COMPLETED &&
+          o2.getStatus() != Constants.DownloadStatus.COMPLETED) {
+        return 1;
+      } else {
+        return -1;
+      }
+    });
+    this.fireTableRowsUpdated(0, this.downloads.size() - 1);
   }
 
   public void cancelDownload(Download download) {
