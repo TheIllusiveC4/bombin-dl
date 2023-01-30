@@ -281,7 +281,8 @@ public class DownloadContainer extends JPanel {
 
     if (!trackers.isEmpty()) {
 
-      for (DownloadTracker tracker : trackers) {
+      for (int i = trackers.size() - 1; i >= 0; i--) {
+        DownloadTracker tracker = trackers.get(i);
         Video vid = DataManager.getVideo(tracker.video());
 
         if (vid != null) {
@@ -300,8 +301,8 @@ public class DownloadContainer extends JPanel {
               JOptionPane.ERROR_MESSAGE);
         }
       }
-      this.tableModel.sortDownloads();
     }
+//    this.tableModel.sortDownloads();
   }
 
   public int add(TreeSet<Video> videos) {

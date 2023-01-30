@@ -48,13 +48,13 @@ public class DownloadTableModel extends DefaultTableModel {
   public void addDownload(Download download) {
 
     if (!downloadMap.containsKey(download.getUrl())) {
-      this.downloads.add(download);
+      this.downloads.add(0, download);
       this.downloadMap.put(download.getUrl(), download);
 
       if (download.getStatus() == Constants.DownloadStatus.QUEUED) {
         this.executor.beginDownload(download);
       }
-      this.fireTableRowsInserted(this.getRowCount() - 1, this.getRowCount() - 1);
+      this.fireTableRowsInserted(0, 0);
     }
   }
 
@@ -64,7 +64,7 @@ public class DownloadTableModel extends DefaultTableModel {
     for (Download download : downloads) {
 
       if (!downloadMap.containsKey(download.getUrl())) {
-        this.downloads.add(download);
+        this.downloads.add(0, download);
         this.downloadMap.put(download.getUrl(), download);
 
         if (download.getStatus() == Constants.DownloadStatus.QUEUED) {
@@ -73,9 +73,7 @@ public class DownloadTableModel extends DefaultTableModel {
         size++;
       }
     }
-    this.fireTableRowsInserted(this.getRowCount() - 1,
-        this.getRowCount() + size - 2);
-    this.sortDownloads();
+    this.fireTableRowsInserted(0, size - 1);
   }
 
   public Download getDownload(int row) {
@@ -94,42 +92,13 @@ public class DownloadTableModel extends DefaultTableModel {
 
   public void updateDownload(Download download) {
     int row = this.downloads.indexOf(download);
-
-    if (download.getStatus() == Constants.DownloadStatus.COMPLETED) {
-      this.sortDownloads();
-      return;
-    }
     this.fireTableRowsUpdated(row, row);
-  }
-
-  public void sortDownloads() {
-    this.downloads.sort((o1, o2) -> {
-
-      if ((o1.getStatus() != Constants.DownloadStatus.COMPLETED &&
-          o2.getStatus() != Constants.DownloadStatus.COMPLETED) ||
-          (o1.getStatus() == Constants.DownloadStatus.COMPLETED &&
-              o2.getStatus() == Constants.DownloadStatus.COMPLETED)) {
-        int compareDates =
-            LocalDateTime.parse(o1.getDate()).compareTo(LocalDateTime.parse(o2.getDate()));
-
-        if (compareDates == 0) {
-          return o1.getVideo().compareTo(o2.getVideo());
-        }
-        return compareDates;
-      } else if (o1.getStatus() == Constants.DownloadStatus.COMPLETED &&
-          o2.getStatus() != Constants.DownloadStatus.COMPLETED) {
-        return 1;
-      } else {
-        return -1;
-      }
-    });
-    this.fireTableRowsUpdated(0, this.downloads.size() - 1);
   }
 
   public void cancelDownload(Download download) {
     download.cancel();
     this.executor.stopDownload(download);
-    updateDownload(download);
+    this.updateDownload(download);
   }
 
   public Download removeDownload(int row) {
@@ -269,4 +238,17 @@ public class DownloadTableModel extends DefaultTableModel {
   public boolean isCellEditable(int row, int column) {
     return false;
   }
+//
+//  public void sortDownloads() {
+//    this.downloads.sort((o1, o2) -> {
+//      int compareDates =
+//          LocalDateTime.parse(o2.getDate()).compareTo(LocalDateTime.parse(o1.getDate()));
+//
+//      if (compareDates == 0) {
+//        return o2.getVideo().compareTo(o1.getVideo());
+//      }
+//      return compareDates;
+//    });
+//    this.fireTableRowsUpdated(0, this.downloads.size() - 1);
+//  }
 }
