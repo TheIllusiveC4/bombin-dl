@@ -35,6 +35,9 @@ public class UserPrefs {
   private Constants.VideoQuality videoQuality;
   private String downloadDirectory;
   private String fileOutputTemplate;
+  private String showFallback;
+  private boolean replaceSpaces;
+  private String removeCharacters;
   private boolean includeMetadata;
   private boolean includeImages;
   private int maxDownloads;
@@ -45,6 +48,9 @@ public class UserPrefs {
     this.downloadDirectory = FileManager.DOWNLOADS.getAbsolutePath();
     this.premium = false;
     this.fileOutputTemplate = "{year}-{month}-{day} - {title}";
+    this.showFallback = "";
+    this.replaceSpaces = false;
+    this.removeCharacters = "";
     this.maxDownloads = 3;
     this.includeImages = false;
     this.includeMetadata = false;
@@ -65,6 +71,10 @@ public class UserPrefs {
         this.premium = userPrefs.premium;
         this.fileOutputTemplate = Objects.requireNonNullElse(userPrefs.fileOutputTemplate,
             "{year}-{month}-{day} - {title}");
+        this.showFallback = Objects.requireNonNullElse(userPrefs.showFallback,
+            "{year}-{month}-{day} - {title}");
+        this.replaceSpaces = userPrefs.replaceSpaces;
+        this.removeCharacters = Objects.requireNonNullElse(this.removeCharacters, "");
         this.maxDownloads = userPrefs.maxDownloads == 0 ? 3 : userPrefs.maxDownloads;
         this.includeImages = userPrefs.includeImages;
         this.includeMetadata = userPrefs.includeMetadata;
@@ -86,6 +96,10 @@ public class UserPrefs {
 
       if (INSTANCE.fileOutputTemplate.isEmpty()) {
         INSTANCE.fileOutputTemplate = "{year}-{month}-{day} - {title}";
+      }
+
+      if (INSTANCE.showFallback.isEmpty()) {
+        INSTANCE.showFallback = "{year}-{month}-{day} - {title}";
       }
       Constants.GSON.toJson(INSTANCE, writer);
     } catch (IOException e) {
@@ -156,5 +170,29 @@ public class UserPrefs {
 
   public void setIncludeImages(boolean includeImages) {
     this.includeImages = includeImages;
+  }
+
+  public String getShowFallback() {
+    return showFallback;
+  }
+
+  public void setShowFallback(String showFallback) {
+    this.showFallback = showFallback;
+  }
+
+  public boolean isReplaceSpaces() {
+    return replaceSpaces;
+  }
+
+  public void setReplaceSpaces(boolean replaceSpaces) {
+    this.replaceSpaces = replaceSpaces;
+  }
+
+  public String getRemoveCharacters() {
+    return removeCharacters;
+  }
+
+  public void setRemoveCharacters(String removeCharacters) {
+    this.removeCharacters = removeCharacters;
   }
 }

@@ -52,36 +52,39 @@ public class VideoUtils {
 
   public static String getQualityUrl(Video video, Constants.VideoQuality videoQuality) {
 
-    if (videoQuality == Constants.VideoQuality.HD) {
+    if (video.url != null) {
 
-      if (video.uhdUrl != null) {
-        return video.uhdUrl;
-      }
+      if (videoQuality == Constants.VideoQuality.HD) {
 
-      if (video.hdUrl != null) {
-        return video.hdUrl;
-      }
+        if (video.uhdUrl != null) {
+          return video.uhdUrl;
+        }
 
-      if (video.highUrl != null) {
-        return video.highUrl;
-      }
+        if (video.hdUrl != null) {
+          return video.hdUrl;
+        }
 
-      if (video.lowUrl != null) {
-        return video.lowUrl;
-      }
-    } else if (videoQuality == Constants.VideoQuality.HIGH) {
+        if (video.highUrl != null) {
+          return video.highUrl;
+        }
 
-      if (video.highUrl != null) {
-        return video.highUrl;
-      }
+        if (video.lowUrl != null) {
+          return video.lowUrl;
+        }
+      } else if (videoQuality == Constants.VideoQuality.HIGH) {
 
-      if (video.lowUrl != null) {
-        return video.lowUrl;
-      }
-    } else {
+        if (video.highUrl != null) {
+          return video.highUrl;
+        }
 
-      if (video.lowUrl != null) {
-        return video.lowUrl;
+        if (video.lowUrl != null) {
+          return video.lowUrl;
+        }
+      } else {
+
+        if (video.lowUrl != null) {
+          return video.lowUrl;
+        }
       }
     }
     return null;

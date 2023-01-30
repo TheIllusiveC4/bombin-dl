@@ -303,28 +303,33 @@ public class DownloadContainer extends JPanel {
       String url = VideoUtils.getQualityUrl(video, UserPrefs.INSTANCE.getQuality());
 
       if (url != null) {
+        String output = UserPrefs.INSTANCE.getShowFallback();
         Show show = DataManager.getShow(video.videoShow);
-        String showName = "Miscellaneous";
+        String showName = "";
         String showGuid = "";
 
         if (show != null) {
           showGuid = show.guid;
           showName = show.title;
+          output = UserPrefs.INSTANCE.getFileOutputTemplate();
         }
-        String output = UserPrefs.INSTANCE.getFileOutputTemplate();
 
         if (DataManager.isFreemium(showGuid + video.name)) {
           output += video.premium ? "_premium" : "_free";
         }
         output += url.substring(url.lastIndexOf("."));
+        String fileName = video.url.substring(0, video.url.lastIndexOf("."));
+        String quality = url.substring(url.lastIndexOf("_") + 1, url.lastIndexOf("."));
+        output = output.replace("{file}", fileName);
+        output = output.replace("{quality}", quality);
         output = output.replace("{guid}", video.guid);
         output = output.replace("{title}", video.name);
+        output = output.replace("{show}", showName);
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         try {
           Date date = dateFormat.parse(video.publishDate);
           Calendar calendar = new GregorianCalendar();
           calendar.setTime(date);
-          output = output.replace("{show}", showName);
           output = output.replace("{year}", "" + calendar.get(Calendar.YEAR));
           output = output.replace("{month}",
               "" + String.format("%02d", calendar.get(Calendar.MONTH) + 1));
@@ -332,6 +337,18 @@ public class DownloadContainer extends JPanel {
               "" + String.format("%02d", calendar.get(Calendar.DAY_OF_MONTH)));
         } catch (ParseException e) {
           BDLogger.error("There was an error parsing date " + video.publishDate + ".", e);
+        }
+
+        if (UserPrefs.INSTANCE.isReplaceSpaces()) {
+          output = output.replace(" ", "_");
+        }
+        String removeCharacters = UserPrefs.INSTANCE.getRemoveCharacters();
+
+        if (!removeCharacters.isEmpty()) {
+
+          for (int i = 0; i < removeCharacters.length(); i++) {
+            output = output.replace(removeCharacters.charAt(i) + "", "");
+          }
         }
         output = VideoUtils.cleanFileName(output, "_");
         downloads.add(
