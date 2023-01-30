@@ -92,7 +92,7 @@ public class DataManager {
     } catch (IOException e) {
       BDLogger.error("There was an error reading show data.", e);
     }
-    Map<String, Boolean> freemium = new HashMap<>();
+    Map<String, Freemium> freemium = new HashMap<>();
 
     try (InputStream is = classloader.getResourceAsStream("seed_videos.json")) {
 
@@ -112,13 +112,13 @@ public class DataManager {
             String showAndVideo = showGuid + video.name;
 
             if (freemium.containsKey(showAndVideo)) {
-              boolean premium = freemium.get(showAndVideo);
+              Freemium existing = freemium.get(showAndVideo);
 
-              if (premium != video.premium) {
+              if (existing.premium() != video.premium && !existing.url().equals(video.url)) {
                 FREEMIUM.add(showAndVideo);
               }
             } else {
-              freemium.put(showAndVideo, video.premium);
+              freemium.put(showAndVideo, new Freemium(video.url, video.premium));
             }
           }
           for (Map.Entry<String, List<String>> entry : SHOWS_TO_VIDEOS.entrySet()) {
@@ -166,13 +166,13 @@ public class DataManager {
           String showAndVideo = showGuid + vid.name;
 
           if (freemium.containsKey(showAndVideo)) {
-            boolean premium = freemium.get(showAndVideo);
+            Freemium existing = freemium.get(showAndVideo);
 
-            if (premium != vid.premium) {
+            if (existing.premium() != vid.premium && !existing.url().equals(vid.url)) {
               FREEMIUM.add(showAndVideo);
             }
           } else {
-            freemium.put(showAndVideo, vid.premium);
+            freemium.put(showAndVideo, new Freemium(vid.url, vid.premium));
           }
         }
 
@@ -299,5 +299,9 @@ public class DataManager {
       BDLogger.error("There was an error while saving latest updates.", e);
     }
     BDLogger.log("Finished saving updates.");
+  }
+
+  private static record Freemium(String url, boolean premium) {
+
   }
 }

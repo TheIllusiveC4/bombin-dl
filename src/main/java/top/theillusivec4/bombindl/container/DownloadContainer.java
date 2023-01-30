@@ -189,7 +189,8 @@ public class DownloadContainer extends JPanel {
       if (!e.getValueIsAdjusting()) {
         this.selectedDownloads.clear();
 
-        for (int i = 0; i < table.getSelectedRows().length; i++) {
+        for (int i = 0; i < table.getSelectedRows().length && i < this.tableModel.getRowCount();
+             i++) {
           this.selectedDownloads.add(this.tableModel.getDownload(table.getSelectedRows()[i]));
         }
       }
@@ -239,7 +240,6 @@ public class DownloadContainer extends JPanel {
     TableColumn sixth = columnModel.getColumn(5);
     sixth.setMinWidth(70);
     sixth.setPreferredWidth(100);
-    table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
     table.setFillsViewportHeight(true);
     table.setShowGrid(false);
     table.setIntercellSpacing(new Dimension(0, 0));
@@ -324,7 +324,8 @@ public class DownloadContainer extends JPanel {
         }
 
         if (DataManager.isFreemium(showGuid + video.name)) {
-          output += video.premium ? "_premium" : "_free";
+          output += video.premium ? UserPrefs.INSTANCE.getPremiumLabel() :
+              UserPrefs.INSTANCE.getFreeLabel();
         }
         output += url.substring(url.lastIndexOf("."));
         String fileName = video.url.substring(0, video.url.lastIndexOf("."));

@@ -36,6 +36,8 @@ public class UserPrefs {
   private String downloadDirectory;
   private String fileOutputTemplate;
   private String showFallback;
+  private String freeLabel;
+  private String premiumLabel;
   private boolean replaceSpaces;
   private String removeCharacters;
   private boolean includeMetadata;
@@ -48,7 +50,9 @@ public class UserPrefs {
     this.downloadDirectory = FileManager.DOWNLOADS.getAbsolutePath();
     this.premium = false;
     this.fileOutputTemplate = "{year}-{month}-{day} - {title}";
-    this.showFallback = "";
+    this.showFallback = "{year}-{month}-{day} - {title}";
+    this.freeLabel = "";
+    this.premiumLabel = " (Premium)";
     this.replaceSpaces = false;
     this.removeCharacters = "";
     this.maxDownloads = 3;
@@ -73,6 +77,8 @@ public class UserPrefs {
             "{year}-{month}-{day} - {title}");
         this.showFallback = Objects.requireNonNullElse(userPrefs.showFallback,
             "{year}-{month}-{day} - {title}");
+        this.freeLabel = Objects.requireNonNullElse(userPrefs.freeLabel, "");
+        this.premiumLabel = Objects.requireNonNullElse(userPrefs.premiumLabel, " (Premium)");
         this.replaceSpaces = userPrefs.replaceSpaces;
         this.removeCharacters = Objects.requireNonNullElse(this.removeCharacters, "");
         this.maxDownloads = userPrefs.maxDownloads == 0 ? 3 : userPrefs.maxDownloads;
@@ -194,5 +200,21 @@ public class UserPrefs {
 
   public void setRemoveCharacters(String removeCharacters) {
     this.removeCharacters = removeCharacters;
+  }
+
+  public String getFreeLabel() {
+    return freeLabel;
+  }
+
+  public void setFreeLabel(String freeLabel) {
+    this.freeLabel = freeLabel;
+  }
+
+  public String getPremiumLabel() {
+    return premiumLabel;
+  }
+
+  public void setPremiumLabel(String premiumLabel) {
+    this.premiumLabel = premiumLabel;
   }
 }

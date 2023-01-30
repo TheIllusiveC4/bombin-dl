@@ -54,6 +54,10 @@ public class PreferencesDialog extends JDialog {
   private JTextField formatField;
   private JLabel showFallbackLabel;
   private JTextField showFallback;
+  private JLabel freeLabelLabel;
+  private JTextField freeLabel;
+  private JLabel premiumLabelLabel;
+  private JTextField premiumLabel;
   private JLabel replaceSpacesLabel;
   private JCheckBox replaceSpaces;
   private JLabel removeCharactersLabel;
@@ -184,9 +188,39 @@ public class PreferencesDialog extends JDialog {
     gc.anchor = GridBagConstraints.LINE_START;
     this.add(this.showFallback, gc);
 
-    this.replaceSpacesLabel = new JLabel("Replace spaces with underscores in output: ");
+    this.freeLabelLabel = new JLabel("Label to attach to free versions if a premium one exists: ");
     gc = new GridBagConstraints();
     gc.gridy = 5;
+    gc.anchor = GridBagConstraints.LINE_END;
+    this.add(this.freeLabelLabel, gc);
+
+    this.freeLabel = new JTextField();
+    this.freeLabel.setText(UserPrefs.INSTANCE.getFreeLabel());
+    gc.fill = GridBagConstraints.HORIZONTAL;
+    gc.gridx = 1;
+    gc.gridwidth = 3;
+    gc.weightx = 1;
+    gc.anchor = GridBagConstraints.LINE_START;
+    this.add(this.freeLabel, gc);
+
+    this.premiumLabelLabel = new JLabel("Label to attach to premium versions if a free one exists: ");
+    gc = new GridBagConstraints();
+    gc.gridy = 6;
+    gc.anchor = GridBagConstraints.LINE_END;
+    this.add(this.premiumLabelLabel, gc);
+
+    this.premiumLabel = new JTextField();
+    this.premiumLabel.setText(UserPrefs.INSTANCE.getPremiumLabel());
+    gc.fill = GridBagConstraints.HORIZONTAL;
+    gc.gridx = 1;
+    gc.gridwidth = 3;
+    gc.weightx = 1;
+    gc.anchor = GridBagConstraints.LINE_START;
+    this.add(this.premiumLabel, gc);
+
+    this.replaceSpacesLabel = new JLabel("Replace spaces with underscores in output: ");
+    gc = new GridBagConstraints();
+    gc.gridy = 7;
     gc.anchor = GridBagConstraints.LINE_END;
     this.add(this.replaceSpacesLabel, gc);
 
@@ -198,7 +232,7 @@ public class PreferencesDialog extends JDialog {
 
     this.removeCharactersLabel = new JLabel("Remove the following characters in output: ");
     gc = new GridBagConstraints();
-    gc.gridy = 6;
+    gc.gridy = 8;
     gc.anchor = GridBagConstraints.LINE_END;
     this.add(this.removeCharactersLabel, gc);
 
@@ -216,14 +250,14 @@ public class PreferencesDialog extends JDialog {
         .setAccessibleDescription(
             "Check to download available metadata along with videos and shows.");
     gc = new GridBagConstraints();
-    gc.gridy = 7;
+    gc.gridy = 9;
     gc.anchor = GridBagConstraints.LINE_END;
     this.add(this.metadataLabel, gc);
 
     this.metadataBox = new JCheckBox();
     this.metadataBox.setSelected(UserPrefs.INSTANCE.isIncludeMetadata());
     gc = new GridBagConstraints();
-    gc.gridy = 7;
+    gc.gridy = 9;
     gc.gridx = 1;
     gc.anchor = GridBagConstraints.LINE_START;
     this.add(this.metadataBox, gc);
@@ -233,21 +267,21 @@ public class PreferencesDialog extends JDialog {
         .setAccessibleDescription(
             "Check to download thumbnails and logos along with videos and shows.");
     gc = new GridBagConstraints();
-    gc.gridy = 8;
+    gc.gridy = 10;
     gc.anchor = GridBagConstraints.LINE_END;
     this.add(this.imagesLabel, gc);
 
     this.imagesBox = new JCheckBox();
     this.imagesBox.setSelected(UserPrefs.INSTANCE.isIncludeMetadata());
     gc = new GridBagConstraints();
-    gc.gridy = 8;
+    gc.gridy = 10;
     gc.gridx = 1;
     gc.anchor = GridBagConstraints.LINE_START;
     this.add(this.imagesBox, gc);
 
     this.maxDownloadsLabel = new JLabel("Maximum simultaneous downloads: ");
     gc = new GridBagConstraints();
-    gc.gridy = 9;
+    gc.gridy = 11;
     gc.anchor = GridBagConstraints.LINE_END;
     this.add(this.maxDownloadsLabel, gc);
     SpinnerNumberModel model =
@@ -255,7 +289,7 @@ public class PreferencesDialog extends JDialog {
     this.maxDownloadsSpinner = new JSpinner(model);
     gc = new GridBagConstraints();
     gc.gridx = 1;
-    gc.gridy = 9;
+    gc.gridy = 11;
     gc.anchor = GridBagConstraints.LINE_START;
     this.add(this.maxDownloadsSpinner, gc);
 
@@ -270,6 +304,8 @@ public class PreferencesDialog extends JDialog {
       BombinDownloader.setMaxDownloads(max);
       UserPrefs.INSTANCE.setShowFallback(this.showFallback.getText());
       UserPrefs.INSTANCE.setReplaceSpaces(this.replaceSpaces.isSelected());
+      UserPrefs.INSTANCE.setFreeLabel(this.freeLabel.getText());
+      UserPrefs.INSTANCE.setPremiumLabel(this.premiumLabel.getText());
       UserPrefs.INSTANCE.setRemoveCharacters(this.removeCharacters.getText());
       UserPrefs.INSTANCE.setIncludeImages(this.imagesBox.isSelected());
       UserPrefs.INSTANCE.setIncludeMetadata(this.metadataBox.isSelected());
@@ -277,7 +313,7 @@ public class PreferencesDialog extends JDialog {
       this.dispose();
     });
     gc = new GridBagConstraints();
-    gc.gridy = 11;
+    gc.gridy = 13;
     gc.gridx = 3;
     gc.anchor = GridBagConstraints.LINE_END;
     gc.insets = new Insets(20, 0, 10, 0);

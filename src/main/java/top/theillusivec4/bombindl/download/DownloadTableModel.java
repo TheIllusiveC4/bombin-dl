@@ -18,7 +18,6 @@
 package top.theillusivec4.bombindl.download;
 
 import java.text.DecimalFormat;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,6 +30,7 @@ public class DownloadTableModel extends DefaultTableModel {
   private final DownloadExecutor executor;
   private final List<Download> downloads;
   private final Map<String, Download> downloadMap;
+  private final Map<String, Download> pendingRemoval;
 
   public DownloadTableModel() {
     super(
@@ -39,6 +39,7 @@ public class DownloadTableModel extends DefaultTableModel {
     this.executor = new DownloadExecutor();
     this.downloads = new ArrayList<>();
     this.downloadMap = new HashMap<>();
+    this.pendingRemoval = new HashMap<>();
   }
 
   public void setMaxDownloads(int num) {
@@ -93,6 +94,16 @@ public class DownloadTableModel extends DefaultTableModel {
   public void updateDownload(Download download) {
     int row = this.downloads.indexOf(download);
     this.fireTableRowsUpdated(row, row);
+
+    if (this.pendingRemoval.containsKey(download.getUrl()) &&
+        download.getStatus() == Constants.DownloadStatus.CANCELLED) {
+      Download removed = this.downloads.remove(row);
+
+      if (removed != null) {
+        this.downloadMap.remove(removed.getUrl());
+        this.fireTableRowsDeleted(row, row);
+      }
+    }
   }
 
   public void cancelDownload(Download download) {
@@ -101,31 +112,37 @@ public class DownloadTableModel extends DefaultTableModel {
     this.updateDownload(download);
   }
 
-  public Download removeDownload(int row) {
-    Download removed = this.downloads.remove(row);
+  public void removeDownload(Download download, int row) {
+    this.executor.stopDownload(download);
 
-    if (removed != null) {
-      this.downloadMap.remove(removed.getUrl());
-      this.executor.stopDownload(removed);
-      this.fireTableRowsDeleted(row, row);
+    if (download.getStatus() == Constants.DownloadStatus.DOWNLOADING) {
+      this.pendingRemoval.put(download.getUrl(), download);
+    } else {
+      Download removed = this.downloads.remove(row);
+
+      if (removed != null) {
+        this.downloadMap.remove(removed.getUrl());
+        this.fireTableRowsDeleted(row, row);
+      }
     }
-    return removed;
   }
 
-  public Download removeDownload(String url) {
+  public void removeDownload(String url) {
+    Download download = null;
     int row = -1;
 
     for (int i = 0; i < this.downloads.size(); i++) {
+      Download current = this.downloads.get(i);
 
-      if (this.downloads.get(i).getUrl().equals(url)) {
+      if (current.getUrl().equals(url)) {
         row = i;
+        download = current;
       }
     }
 
     if (row >= 0) {
-      return this.removeDownload(row);
+      this.removeDownload(download, row);
     }
-    return null;
   }
 
   @Override
