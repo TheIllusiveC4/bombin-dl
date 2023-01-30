@@ -36,7 +36,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import top.theillusivec4.bombindl.GiantBombAPI;
 import top.theillusivec4.bombindl.data.json.Cache;
@@ -51,6 +53,8 @@ public class DataManager {
   private static final Map<String, Show> SHOWS = new ConcurrentHashMap<>();
   private static final Map<String, Video> VIDEOS = new ConcurrentHashMap<>();
   private static final Map<String, List<String>> SHOWS_TO_VIDEOS = new ConcurrentHashMap<>();
+
+  private static final Set<String> FREEMIUM = new ConcurrentSkipListSet<>();
 
   private static final Map<String, Show> NEWEST_SHOWS = new LinkedHashMap<>();
   private static final Map<String, Video> NEWEST_VIDS = new LinkedHashMap<>();
@@ -88,6 +92,7 @@ public class DataManager {
     } catch (IOException e) {
       BDLogger.error("There was an error reading show data.", e);
     }
+    Map<String, Boolean> freemium = new HashMap<>();
 
     try (InputStream is = classloader.getResourceAsStream("seed_videos.json")) {
 
@@ -98,12 +103,23 @@ public class DataManager {
 
           for (Video video : videos) {
             VIDEOS.put(video.guid, video);
-            String showName = video.videoShow;
+            String showGuid = video.videoShow;
 
-            if (showName == null) {
-              showName = "";
+            if (showGuid == null) {
+              showGuid = "";
             }
-            shows.computeIfAbsent(showName, (k) -> new ArrayList<>()).add(video.guid);
+            shows.computeIfAbsent(showGuid, (k) -> new ArrayList<>()).add(video.guid);
+            String showAndVideo = showGuid + video.name;
+
+            if (freemium.containsKey(showAndVideo)) {
+              boolean premium = freemium.get(showAndVideo);
+
+              if (premium != video.premium) {
+                FREEMIUM.add(showAndVideo);
+              }
+            } else {
+              freemium.put(showAndVideo, video.premium);
+            }
           }
           for (Map.Entry<String, List<String>> entry : SHOWS_TO_VIDEOS.entrySet()) {
             entry.getValue().addAll(shows.getOrDefault(entry.getKey(), new ArrayList<>()));
@@ -141,6 +157,23 @@ public class DataManager {
           NEWEST_VIDS.put(vid.guid, vid);
           SHOWS_TO_VIDEOS.computeIfAbsent(vid.videoShow == null ? "" : vid.videoShow,
               (k) -> new ArrayList<>()).add(vid.guid);
+
+          String showGuid = vid.videoShow;
+
+          if (showGuid == null) {
+            showGuid = "";
+          }
+          String showAndVideo = showGuid + vid.name;
+
+          if (freemium.containsKey(showAndVideo)) {
+            boolean premium = freemium.get(showAndVideo);
+
+            if (premium != vid.premium) {
+              FREEMIUM.add(showAndVideo);
+            }
+          } else {
+            freemium.put(showAndVideo, vid.premium);
+          }
         }
 
         if (vids.length > 0) {
@@ -175,6 +208,10 @@ public class DataManager {
 
   public static List<String> getVideos(String show) {
     return SHOWS_TO_VIDEOS.getOrDefault(show, new ArrayList<>());
+  }
+
+  public static boolean isFreemium(String showGuidAndVideoName) {
+    return FREEMIUM.contains(showGuidAndVideoName);
   }
 
   public static void updateShows(JsonElement jsonElement) {

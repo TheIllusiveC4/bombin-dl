@@ -51,6 +51,7 @@ import top.theillusivec4.bombindl.data.DataManager;
 import top.theillusivec4.bombindl.data.FileManager;
 import top.theillusivec4.bombindl.data.UserPrefs;
 import top.theillusivec4.bombindl.data.json.DownloadTracker;
+import top.theillusivec4.bombindl.data.json.Show;
 import top.theillusivec4.bombindl.data.json.Video;
 import top.theillusivec4.bombindl.download.Download;
 import top.theillusivec4.bombindl.download.DownloadProgressBar;
@@ -302,8 +303,20 @@ public class DownloadContainer extends JPanel {
       String url = VideoUtils.getQualityUrl(video, UserPrefs.INSTANCE.getQuality());
 
       if (url != null) {
-        String output =
-            UserPrefs.INSTANCE.getFileOutputTemplate() + url.substring(url.lastIndexOf("."));
+        Show show = DataManager.getShow(video.videoShow);
+        String showName = "Miscellaneous";
+        String showGuid = "";
+
+        if (show != null) {
+          showGuid = show.guid;
+          showName = show.title;
+        }
+        String output = UserPrefs.INSTANCE.getFileOutputTemplate();
+
+        if (DataManager.isFreemium(showGuid + video.name)) {
+          output += video.premium ? "_premium" : "_free";
+        }
+        output += url.substring(url.lastIndexOf("."));
         output = output.replace("{guid}", video.guid);
         output = output.replace("{title}", video.name);
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -311,6 +324,7 @@ public class DownloadContainer extends JPanel {
           Date date = dateFormat.parse(video.publishDate);
           Calendar calendar = new GregorianCalendar();
           calendar.setTime(date);
+          output = output.replace("{show}", showName);
           output = output.replace("{year}", "" + calendar.get(Calendar.YEAR));
           output = output.replace("{month}",
               "" + String.format("%02d", calendar.get(Calendar.MONTH) + 1));
@@ -322,8 +336,7 @@ public class DownloadContainer extends JPanel {
         output = VideoUtils.cleanFileName(output, "_");
         downloads.add(
             new Download(this.tableModel, url + "?api_key=" + UserPrefs.INSTANCE.getApiKey(),
-                output,
-                video, UserPrefs.INSTANCE.isIncludeMetadata(),
+                output, video, UserPrefs.INSTANCE.isIncludeMetadata(),
                 UserPrefs.INSTANCE.isIncludeImages()));
       } else {
         JOptionPane.showMessageDialog(this, video.name +
