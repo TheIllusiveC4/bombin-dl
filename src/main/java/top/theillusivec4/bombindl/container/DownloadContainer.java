@@ -124,6 +124,7 @@ public class DownloadContainer extends JPanel {
         this.tableModel.beginDownload(download);
         this.cancelButton.setEnabled(true);
         this.restartButton.setEnabled(false);
+        this.clearButton.setEnabled(false);
       }
     });
     gc = new GridBagConstraints();
@@ -140,6 +141,7 @@ public class DownloadContainer extends JPanel {
         this.tableModel.cancelDownload(download);
         this.restartButton.setEnabled(true);
         this.cancelButton.setEnabled(false);
+        this.clearButton.setEnabled(true);
       }
     });
     panel.add(this.cancelButton, gc);
@@ -150,7 +152,10 @@ public class DownloadContainer extends JPanel {
       List<Download> downloads = new ArrayList<>(this.selectedDownloads);
 
       for (Download selectedDownload : downloads) {
-        this.tableModel.removeDownload(selectedDownload.getUrl());
+
+        if (selectedDownload.getStatus() != Constants.DownloadStatus.DOWNLOADING) {
+          this.tableModel.removeDownload(selectedDownload.getUrl());
+        }
       }
     });
     panel.add(this.clearButton, gc);
