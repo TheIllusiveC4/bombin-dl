@@ -213,7 +213,8 @@ public class DownloadContainer extends JPanel {
           this.restartButton.setEnabled(false);
           this.cancelButton.setEnabled(false);
         }
-        this.clearButton.setEnabled(true);
+        this.clearButton.setEnabled(this.selectedDownloads.stream()
+            .noneMatch(d -> d.getStatus() == Constants.DownloadStatus.DOWNLOADING));
       }
     });
     DownloadProgressBar renderer = new DownloadProgressBar(0, 100);
