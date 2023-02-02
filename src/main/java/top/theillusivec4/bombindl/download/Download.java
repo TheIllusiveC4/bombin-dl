@@ -269,10 +269,20 @@ public class Download implements Runnable {
     }
 
     try (InputStream in = connection.getInputStream()) {
+      File file = new File(UserPrefs.INSTANCE.getDownloadDirectory(),
+          this.subDirectory + "/" + this.output);
 
-      try (FileOutputStream fos = new FileOutputStream(
-          new File(UserPrefs.INSTANCE.getDownloadDirectory(),
-              this.subDirectory + "/" + this.output))) {
+      if (size == file.length()) {
+        BDLogger.log(
+            "Found already completed download for " + this.output + " from " + this.url + ".");
+        SwingUtilities.invokeLater(() -> {
+          this.downloaded = size;
+          this.complete();
+        });
+        return;
+      }
+
+      try (FileOutputStream fos = new FileOutputStream(file)) {
 
         try (BufferedOutputStream bout = new BufferedOutputStream(fos, MAX_BUFFER)) {
           byte[] data = new byte[MAX_BUFFER];
@@ -326,7 +336,6 @@ public class Download implements Runnable {
 
   private void downloadSimple(String url, String name) {
     HttpURLConnection connection = null;
-    GiantBombAPI.rateLimit();
     BDLogger.log("Starting nested download for " + url + "...");
 
     try {
@@ -338,6 +347,7 @@ public class Download implements Runnable {
       if (file.exists()) {
         return;
       }
+      GiantBombAPI.rateLimit();
       connection = (HttpURLConnection) imagesUrl.openConnection();
       connection.setRequestProperty("User-Agent",
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36");
