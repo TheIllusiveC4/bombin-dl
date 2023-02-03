@@ -17,6 +17,7 @@
 
 package top.theillusivec4.bombindl.util.video;
 
+import com.vdurmont.emoji.EmojiParser;
 import java.util.Arrays;
 import top.theillusivec4.bombindl.data.json.Video;
 import top.theillusivec4.bombindl.util.Constants;
@@ -33,6 +34,7 @@ public class VideoUtils {
 
   public static String cleanFileName(String badFileName, String replacement) {
     StringBuilder cleanName = new StringBuilder();
+    badFileName = EmojiParser.parseToAliases(badFileName);
     int len = badFileName.codePointCount(0, badFileName.length());
 
     for (int i = 0; i < len; i++) {
