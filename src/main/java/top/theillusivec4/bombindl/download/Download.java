@@ -190,7 +190,7 @@ public class Download implements Runnable {
           try (BufferedWriter writer = Files.newBufferedWriter(file.toPath())) {
             Constants.GSON.toJson(show, writer);
           } catch (IOException e) {
-            BDLogger.error("There was an error copying metadata for " + show.title + ".");
+            BDLogger.error("There was an error copying metadata for " + show.title + ".", e);
           }
         }
       }
@@ -204,7 +204,7 @@ public class Download implements Runnable {
         try (BufferedWriter writer = Files.newBufferedWriter(file.toPath())) {
           Constants.GSON.toJson(orig, writer);
         } catch (IOException e) {
-          BDLogger.error("There was an error copying metadata for " + this.output + ".");
+          BDLogger.error("There was an error copying metadata for " + this.output + ".", e);
         }
       }
       BDLogger.log("Copied metadata for " + this.output + ".");
@@ -239,7 +239,7 @@ public class Download implements Runnable {
       connection.setRequestProperty("User-Agent",
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36");
     } catch (IOException e) {
-      BDLogger.error("There was an error downloading " + this.output + ".", e);
+      BDLogger.error("There was an error opening the connection for downloading " + url + ".", e);
       SwingUtilities.invokeLater(this::fail);
       return;
     }
@@ -258,11 +258,14 @@ public class Download implements Runnable {
       connection.connect();
 
       if (connection.getResponseCode() != 200) {
+        BDLogger.error("Download for " + url + " did not return an OK response, instead returned " +
+            connection.getResponseCode());
+        BDLogger.error(connection.getResponseMessage());
         SwingUtilities.invokeLater(this::fail);
         return;
       }
     } catch (IOException e) {
-      BDLogger.error("There was an error downloading " + this.output + ".", e);
+      BDLogger.error("There was an IO error connecting to " + url + ".", e);
       SwingUtilities.invokeLater(this::fail);
       connection.disconnect();
       return;
@@ -327,7 +330,7 @@ public class Download implements Runnable {
         }
       }
     } catch (IOException e) {
-      BDLogger.error("There was an error downloading " + this.output + ".");
+      BDLogger.error("There was an IO error downloading " + this.output + ".", e);
       SwingUtilities.invokeLater(this::fail);
     } finally {
       connection.disconnect();
@@ -345,6 +348,7 @@ public class Download implements Runnable {
           new File(UserPrefs.INSTANCE.getDownloadDirectory(), this.subDirectory + "/" + name + ext);
 
       if (file.exists()) {
+        BDLogger.log(file + " already exists, skipping...");
         return;
       }
       GiantBombAPI.rateLimit();
@@ -367,7 +371,7 @@ public class Download implements Runnable {
         }
       }
     } catch (IOException e) {
-      BDLogger.error("There was an error downloading " + this.output + ".", e);
+      BDLogger.error("There was an IO error downloading " + this.output + ".", e);
     } finally {
 
       if (connection != null) {
@@ -382,7 +386,12 @@ public class Download implements Runnable {
     if (show != null) {
       this.subDirectory = VideoUtils.cleanFileName(show.title, "_");
     }
-    new File(UserPrefs.INSTANCE.getDownloadDirectory(), this.subDirectory).mkdir();
+
+    try {
+      new File(UserPrefs.INSTANCE.getDownloadDirectory(), this.subDirectory).mkdir();
+    } catch (SecurityException e) {
+      BDLogger.error("Failed to create directory for show " + video.videoShow, e);
+    }
   }
 
   public void notifyUpdate() {
